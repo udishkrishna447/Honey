@@ -1665,6 +1665,33 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast" role="status"></div>
 
+  <!-- HoneyChain Gemini Assistant -->
+  <section class="chatbot" aria-label="HoneyChain assistant">
+    <div class="chatbot-panel" id="chatbot-panel" hidden>
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <span class="chatbot-logo chatbot-logo-small" aria-hidden="true">🐝</span>
+          <div>
+            <strong>HoneyChain Assistant</strong>
+            <span>Ask about this website</span>
+          </div>
+        </div>
+        <button class="chatbot-close" id="chatbot-close" type="button" aria-label="Close assistant">×</button>
+      </div>
+      <div class="chatbot-messages" id="chatbot-messages" aria-live="polite">
+        <div class="chatbot-message chatbot-message-bot">Hi. Ask me about our honey, traceability, beekeeping tools, or checkout.</div>
+      </div>
+      <form class="chatbot-form" id="chatbot-form">
+        <input id="chatbot-input" type="text" maxlength="2000" placeholder="Ask a HoneyChain question..." autocomplete="off" required />
+        <button type="submit" aria-label="Send question">↑</button>
+      </form>
+    </div>
+    <button class="chatbot-toggle" id="chatbot-toggle" type="button" aria-label="Open HoneyChain assistant" aria-expanded="false">
+      <span class="chatbot-logo" aria-hidden="true">🐝</span>
+      <span class="chatbot-pulse" aria-hidden="true"></span>
+    </button>
+  </section>
+
   <!-- Application Scripts -->
   <script src="blockchain.js"></script>
   <script src="iot-telemetry.js"></script>

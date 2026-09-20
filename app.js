@@ -220,6 +220,7 @@ class HoneyChainApp {
     this.renderProducts();
     this.renderCart();
     this.initCartListeners();
+    this.initChatbot();
     this.renderBeekeeperBatches();
     this.renderBeekeeperQR();
 
@@ -240,6 +241,68 @@ class HoneyChainApp {
     toastEl.classList.add('show');
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2800);
+  }
+
+  initChatbot() {
+    this.chatHistory = [];
+    const toggle = this.$('#chatbot-toggle');
+    const panel = this.$('#chatbot-panel');
+    const close = this.$('#chatbot-close');
+    const form = this.$('#chatbot-form');
+    const input = this.$('#chatbot-input');
+
+    const setOpen = (open) => {
+      if (!panel || !toggle) return;
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) input?.focus();
+    };
+
+    toggle?.addEventListener('click', () => setOpen(panel.hidden));
+    close?.addEventListener('click', () => setOpen(false));
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      this.askChatbot(input);
+    });
+  }
+
+  appendChatMessage(text, type) {
+    const messages = this.$('#chatbot-messages');
+    if (!messages) return;
+    const message = document.createElement('div');
+    message.className = `chatbot-message chatbot-message-${type}`;
+    message.textContent = text;
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async askChatbot(input) {
+    const message = input?.value.trim();
+    if (!message || input.disabled) return;
+    input.value = '';
+    input.disabled = true;
+    this.appendChatMessage(message, 'user');
+    this.appendChatMessage('Thinking...', 'bot chatbot-message-loading');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history: this.chatHistory })
+      });
+      const result = await response.json();
+      const loading = this.$('.chatbot-message-loading');
+      loading?.remove();
+      if (!response.ok) throw new Error(result.error || 'Assistant is unavailable');
+      this.chatHistory.push({ role: 'user', text: message }, { role: 'model', text: result.text });
+      this.appendChatMessage(result.text, 'bot');
+    } catch (error) {
+      this.$('.chatbot-message-loading')?.remove();
+      this.appendChatMessage(error.message, 'bot');
+    } finally {
+      input.disabled = false;
+      input.focus();
+    }
   }
 
   // ==========================================

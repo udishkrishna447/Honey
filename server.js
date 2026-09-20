@@ -15,7 +15,10 @@ const PORT = process.env.PORT || 3000;
 const blockchain = new HoneyBlockchain();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TeKms0E782V0u2';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'ZHUA7f53tVs9TxAnyKXYcgnD';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HONEY_PRICES = { 1: 680, 2: 820, 3: 740, 4: 650 };
+let geminiModels = [];
+let geminiModelIndex = 0;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -45,6 +48,99 @@ function readJsonBody(req) {
     });
     req.on('error', reject);
   });
+}
+
+function requestJson(options, payload = null) {
+  return new Promise((resolve, reject) => {
+    const request = https.request(options, response => {
+      let responseBody = '';
+      response.on('data', chunk => { responseBody += chunk; });
+      response.on('end', () => {
+        let result;
+        try { result = JSON.parse(responseBody); } catch { result = {}; }
+        if (response.statusCode >= 200 && response.statusCode < 300) resolve(result);
+        else reject(new Error(result.error?.message || 'Gemini request failed'));
+      });
+    });
+    request.on('error', reject);
+    if (payload) request.write(JSON.stringify(payload));
+    request.end();
+  });
+}
+
+async function getGeminiModel() {
+  if (geminiModels.length) return geminiModels[geminiModelIndex].name;
+  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured in .env');
+
+  const result = await requestJson({
+    hostname: 'generativelanguage.googleapis.com',
+    path: `/v1beta/models?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+    method: 'GET'
+  });
+  const availableModels = (result.models || []).filter(model =>
+    model.supportedGenerationMethods?.includes('generateContent')
+  );
+  const preferredModels = [
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.6-flash',
+    'gemini-3.7-flash',
+    'gemini-3.8-flash',
+    'gemini-3.1-flash-lite',
+    'gemini-flash-lite-latest',
+    'gemini-flash-latest',
+    'gemini-3.1-flash',
+    'gemini-3.0-flash',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
+  ];
+  geminiModels = preferredModels
+    .map(preferred => availableModels.find(model => model.name.endsWith(`/${preferred}`)))
+    .filter(Boolean);
+  geminiModels.push(...availableModels.filter(model => !geminiModels.includes(model)));
+  if (!geminiModels.length) throw new Error('No Gemini model supports generateContent for this API key');
+  console.log(`Gemini chatbot model: ${geminiModels[0].name}`);
+  return geminiModels[0].name;
+}
+
+async function answerWebsiteQuestion(message, history = []) {
+  const model = await getGeminiModel();
+  const contents = history
+    .filter(item => ['user', 'model'].includes(item.role) && typeof item.text === 'string')
+    .slice(-10)
+    .map(item => ({ role: item.role, parts: [{ text: item.text.slice(0, 2000) }] }));
+  contents.push({ role: 'user', parts: [{ text: message }] });
+
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const model = await getGeminiModel();
+    try {
+      const result = await requestJson({
+        hostname: 'generativelanguage.googleapis.com',
+        path: `/v1beta/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }, {
+        systemInstruction: {
+          parts: [{ text: 'You are HoneyChain website assistant. Answer questions about this website, its honey products, KVIC traceability, blockchain, beekeeper tools, ordering, and payment flow. Use concise, helpful language. If a question is unrelated, say you can only help with HoneyChain website topics. Do not invent product prices, certifications, or order status.' }]
+        },
+        contents
+      });
+      const text = result.candidates?.[0]?.content?.parts
+        ?.map(part => part.text || '')
+        .join('')
+        .trim();
+      if (!text) throw new Error('Gemini returned an empty response');
+      return { text, model };
+    } catch (error) {
+      lastError = error;
+      geminiModelIndex++;
+      if (geminiModelIndex >= geminiModels.length) break;
+    }
+  }
+  throw lastError || new Error('Gemini did not return a response');
 }
 
 function createRazorpayOrder(amount) {
@@ -174,6 +270,20 @@ const server = http.createServer((req, res) => {
       queenHealth: 'Active & Optimal',
       swarmRiskScore: 12
     }));
+    return;
+  }
+
+  if (pathname === '/api/chat' && req.method === 'POST') {
+    readJsonBody(req).then(async ({ message, history }) => {
+      if (typeof message !== 'string' || !message.trim()) throw new Error('Please enter a question');
+      if (message.length > 2000) throw new Error('Question is too long');
+      const answer = await answerWebsiteQuestion(message.trim(), Array.isArray(history) ? history : []);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(answer));
+    }).catch(error => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
     return;
   }
 
