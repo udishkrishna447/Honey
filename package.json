@@ -16,5 +16,8 @@
     "ai-diagnostics"
   ],
   "author": "HoneyChain Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.1"
+  }
 }

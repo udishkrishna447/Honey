@@ -253,7 +253,7 @@
             </div>
             <div style="display: flex; gap: 12px;">
               <button class="button button-outline" style="flex: 1; justify-content: center;" onclick="honeyApp.switchSubView('cust-shop')">← Continue Shopping</button>
-              <button class="button button-amber" style="flex: 1.5; justify-content: center;" onclick="alert('Demo Checkout: Orders are routed directly to KVIC rural beekeeping cooperatives!')">Proceed to Secure Checkout <span>→</span></button>
+              <button class="button button-amber" style="flex: 1.5; justify-content: center;" onclick="honeyApp.startCheckout()">Proceed to Secure Checkout <span>→</span></button>
             </div>
           </div>
         </section>
@@ -1530,7 +1530,7 @@
           <span>Subtotal</span>
           <span id="cart-total">₹0</span>
         </div>
-        <button class="button button-dark" style="width: 100%; justify-content: center;" onclick="alert('Demo Checkout: Orders are routed directly to KVIC rural beekeeping cooperatives!')">
+        <button class="button button-dark" style="width: 100%; justify-content: center;" onclick="honeyApp.startCheckout()">
           Proceed to Verifiable Checkout <span>→</span>
         </button>
       </div>
@@ -1669,6 +1669,7 @@
   <script src="blockchain.js"></script>
   <script src="iot-telemetry.js"></script>
   <script src="ai-diagnostics.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

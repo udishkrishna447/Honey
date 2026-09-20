@@ -5,12 +5,17 @@
  */
 
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 const { HoneyBlockchain } = require('./blockchain');
 
 const PORT = process.env.PORT || 3000;
 const blockchain = new HoneyBlockchain();
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TeKms0E782V0u2';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'ZHUA7f53tVs9TxAnyKXYcgnD';
+const HONEY_PRICES = { 1: 680, 2: 820, 3: 740, 4: 650 };
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -26,6 +31,47 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon'
 };
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(body || '{}'));
+      } catch {
+        reject(new Error('Invalid JSON request body'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function createRazorpayOrder(amount) {
+  return new Promise((resolve, reject) => {
+    const request = https.request({
+      hostname: 'api.razorpay.com',
+      path: '/v1/orders',
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64')}`,
+        'Content-Type': 'application/json'
+      }
+    }, response => {
+      let responseBody = '';
+      response.on('data', chunk => { responseBody += chunk; });
+      response.on('end', () => {
+        let result;
+        try { result = JSON.parse(responseBody); } catch { result = {}; }
+        if (response.statusCode >= 200 && response.statusCode < 300) resolve(result);
+        else reject(new Error(result.error?.description || 'Razorpay order creation failed'));
+      });
+    });
+    request.on('error', reject);
+    request.write(JSON.stringify({ amount, currency: 'INR', receipt: `honeychain_${Date.now()}` }));
+    request.end();
+  });
+}
 
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
@@ -128,6 +174,33 @@ const server = http.createServer((req, res) => {
       queenHealth: 'Active & Optimal',
       swarmRiskScore: 12
     }));
+    return;
+  }
+
+  if (pathname === '/api/create-order' && req.method === 'POST') {
+    if (!RAZORPAY_KEY_SECRET) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'RAZORPAY_KEY_SECRET is not configured on the server' }));
+      return;
+    }
+
+    readJsonBody(req).then(async ({ items }) => {
+      if (!Array.isArray(items) || !items.length) throw new Error('Your bag is empty');
+      const amount = items.reduce((total, item) => {
+        const price = HONEY_PRICES[item.id];
+        const quantity = Number(item.quantity);
+        if (!price || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+          throw new Error('Invalid item in bag');
+        }
+        return total + price * quantity * 100;
+      }, 0);
+      const razorpayOrder = await createRazorpayOrder(amount);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ id: razorpayOrder.id, amount, currency: 'INR', keyId: RAZORPAY_KEY_ID }));
+    }).catch(error => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
     return;
   }
 

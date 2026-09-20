@@ -1103,6 +1103,77 @@ class HoneyChainApp {
     if (pageItems) pageItems.addEventListener('click', handleCartAction);
   }
 
+  async startCheckout() {
+    if (!this.cart.length) {
+      this.toast('Add at least one honey jar before checkout');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: this.cart })
+      });
+      const order = await response.json();
+      if (!response.ok) throw new Error(order.error || 'Unable to start checkout');
+
+      if (!window.Razorpay) throw new Error('Razorpay Checkout could not be loaded');
+
+      const razorpay = new Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'HoneyChain',
+        description: 'Verified KVIC honey order',
+        order_id: order.id,
+        prefill: {
+          name: this.currentUser.name,
+          email: this.currentUser.email
+        },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true
+        },
+        theme: { color: '#d97706' },
+        handler: (payment) => this.completeOrder(payment)
+      });
+
+      razorpay.on('payment.failed', (details) => {
+        this.toast(details.error?.description || 'Payment failed. Please try again.');
+      });
+      razorpay.open();
+    } catch (error) {
+      this.toast(error.message);
+    }
+  }
+
+  completeOrder(payment) {
+    this.cart = [];
+    this.saveCart();
+    this.renderCart();
+    this.toggleCart(false);
+    this.switchSubView('cust-cart');
+
+    const successHtml = `
+      <div style="text-align: center; padding: 42px 20px;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">✓</div>
+        <h3 style="font-size: 1.6rem; margin-bottom: 8px;">Order placed successfully</h3>
+        <p style="color: #57534e; margin-bottom: 12px;">Your verified honey is on its way.</p>
+        <small style="color: #78716c;">Payment ID: ${payment.razorpay_payment_id}</small>
+      </div>
+    `;
+    const pageItems = this.$('#cart-page-items');
+    const drawerItems = this.$('#cart-items');
+    if (pageItems) pageItems.innerHTML = successHtml;
+    if (drawerItems) drawerItems.innerHTML = successHtml;
+    this.$('#cart-page-total').textContent = '';
+    this.$('#cart-total').textContent = '';
+    this.toast('Payment successful');
+  }
+
   renderCart() {
     const count = this.cart.reduce((s, i) => s + i.quantity, 0);
     this.$$('.cart-count').forEach(el => el.textContent = count);

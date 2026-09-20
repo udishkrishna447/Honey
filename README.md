@@ -113,6 +113,8 @@ By pairing **cryptographic blockchain batch records**, **smart IoT hive telemetr
    node server.js
    `
    *(Or double-click start.bat on Windows)*
+   
+   For Razorpay test checkout, put `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in the local `.env` file. The server loads them automatically when you run `npm start`.
 
 3. **Open in Browser**:
    Open your browser and navigate to:
