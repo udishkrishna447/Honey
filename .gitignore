@@ -6,3 +6,5 @@ node_modules/
 Thumbs.db
 *.tmp
 *.zip
+*.pdf
+*.pptx
