@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HoneyChain | Blockchain Honey Traceability & Smart Beekeeping</title>
+  <meta name="description" content="Integrated Blockchain, AI, and IoT ecosystem for KVIC Honey Mission with 4 dedicated stakeholder portals." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Announcement Bar -->
+  <div class="announcement">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="kvic-badge-pill">🇮🇳 KVIC HONEY MISSION</span>
+      <span>Empowering Rural Beekeepers with Cryptographic Traceability & Smart Hives</span>
+    </div>
+    <span class="announcement-note">100% NMR Pure · FSSAI & AGMARK Compliant · Zero Synthetic Syrups</span>
+  </div>
+
+  <!-- Header & Navigation -->
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="HoneyChain Home">
+      <span class="brand-mark">H</span>
+      <span>HONEY<span>CHAIN</span></span>
+    </a>
+
+    <!-- Top Navigation Tabs (Dynamically populated in exact order by active role) -->
+    <nav class="module-tabs" id="role-nav-tabs" aria-label="Role Navigation"></nav>
+
+    <div class="header-actions">
+      <!-- User Auth Role Selector / Profile -->
+      <div class="user-auth-wrap" id="user-auth-wrap">
+        <button class="auth-pill-btn" id="open-login-btn" aria-label="Account Login or Switch Role">
+          <span id="auth-user-avatar">👤</span>
+          <span id="auth-user-name">Sign In / Switch Role</span>
+          <span class="auth-role-tag tag-customer" id="auth-role-tag">CUSTOMER</span>
+        </button>
+
+        <!-- Dropdown Menu when clicked -->
+        <div class="auth-dropdown" id="auth-dropdown">
+          <div class="auth-dropdown-user">
+            <div class="auth-avatar-circle" id="drop-user-avatar">👤</div>
+            <div class="auth-user-meta">
+              <strong id="drop-user-name">Guest User</strong>
+              <span id="drop-user-role">Not logged in</span>
+            </div>
+          </div>
+          <div class="auth-dropdown-actions">
+            <button class="auth-dropdown-btn" id="drop-switch-role-btn">
+              <span>🔄</span> Switch Portal / Role
+            </button>
+            <button class="auth-dropdown-btn logout" id="drop-logout-btn">
+              <span>🚪</span> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shopping Bag Button (shown for Customer & Admin) -->
+      <button class="cart-button" id="header-cart-btn" data-open-cart>
+        Bag <span class="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ========================================================
+         PORTAL 1: 👤 CUSTOMER LOGIN VIEW
+         Order:
+         1. 🏠 Home
+         2. 🍯 Honey Shop
+         3. 🔍 Verify Honey / Scan QR
+         4. 📜 Traceability
+         5. 📦 My Orders
+         6. 🛒 Cart
+         7. 👤 My Profile
+         (Strictly NO IoT, AI, KVIC Cert, or Blockchain Admin)
+         ======================================================== -->
+    <div class="role-portal-view" id="portal-customer">
+      
+      <!-- 1. 🏠 Customer Home -->
+      <div class="subview-content active" id="cust-home">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">THE HONEST HONEY MARKETPLACE</p>
+            <h1>Pure by nature.<br /><em>Proven by Blockchain.</em></h1>
+            <p class="hero-lede">Small-batch authentic Indian honey harvested by rural tribal beekeepers under KVIC's Honey Mission. Verified for NMR purity and sealed with cryptographic block records.</p>
+            <div class="hero-actions">
+              <button class="button button-amber" onclick="honeyApp.switchSubView('cust-verify')">Verify Honey / Scan QR <span>↓</span></button>
+              <button class="button button-dark" onclick="honeyApp.switchSubView('cust-shop')">Explore Harvest Jars <span>↗</span></button>
+            </div>
+            <div class="hero-proof">
+              <div class="proof-avatars"><span>K</span><span>N</span><span>S</span><span>+</span></div>
+              <p><strong>4,200+</strong> KVIC beekeepers onboarded.<br />Zero C4 sugar or rice syrup adulteration.</p>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="hero-image-wrap">
+              <img src="nilgiris-honey.jpg" alt="Nilgiris Wild Mountain Honey - Limited Forest Harvest" />
+              <div class="image-stamp">
+                <span style="color: #d97706; font-size: 1rem;">✳</span>
+                <span>SHA-256 PROVENANCE<br />KVIC LAB CERTIFIED</span>
+              </div>
+              <div class="jar-caption">
+                <span>BATCH HC-KVIC-2026-NIL01</span>
+                <span>Nilgiri Wild Mountain Honey (500g)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="ticker">
+          <div>✳ 100% NMR TESTED PURITY</div>
+          <div>✳ ZERO C4 / C3 CORN OR RICE SYRUPS</div>
+          <div>✳ DIRECT FAIR PRICE TO TRIBAL BEEKEEPERS</div>
+          <div>✳ BOT-FREE DIRECT-TO-FARMER MARKETPLACE</div>
+          <div>✳ IMMUTABLE BLOCKCHAIN PROVENANCE</div>
+        </div>
+
+        <section class="trace-section" style="margin-top: 32px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+            <div>
+              <p style="font-family: var(--font-mono); color: var(--color-amber-700); font-size: 0.8rem; font-weight: 700;">FEATURED ORIGIN HARVESTS</p>
+              <h2 style="font-size: 1.8rem; font-weight: 800;">Straight from rural apiaries to your home.</h2>
+            </div>
+            <button class="button button-outline" onclick="honeyApp.switchSubView('cust-shop')">View Full Shop <span>↗</span></button>
+          </div>
+          <div class="product-grid" id="product-grid-featured"></div>
+        </section>
+      </div>
+
+      <!-- 2. 🍯 Honey Shop -->
+      <div class="subview-content" id="cust-shop">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+            <div>
+              <p style="font-family: var(--font-mono); color: var(--color-amber-700); font-size: 0.8rem; font-weight: 700;">HONEY SHOP CATALOG</p>
+              <h2 style="font-size: 2rem; font-weight: 800;">Single-Origin Certified Honey Jars</h2>
+            </div>
+            <span style="font-size: 0.85rem; color: #78716c;">Direct farm-to-door deliveries across India</span>
+          </div>
+          <div class="product-grid" id="product-grid"></div>
+        </section>
+      </div>
+
+      <!-- 3. 🔍 Verify Honey / Scan QR -->
+      <div class="subview-content" id="cust-verify">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div class="trace-box-card">
+            <div class="trace-copy">
+              <p class="eyebrow">VERIFY HONEY / SCAN QR</p>
+              <h2>Check Authenticity<br /><em>Before You Taste.</em></h2>
+              <p>Every genuine HoneyChain jar carries a tamper-evident QR seal. Enter the batch ID printed on your jar or click a sample batch below to query the decentralized ledger.</p>
+
+              <div class="trace-input">
+                <label for="batch-input">Enter HoneyChain Batch ID</label>
+                <div class="input-row">
+                  <input id="batch-input" type="text" value="HC-KVIC-2026-NIL01" placeholder="e.g. HC-KVIC-2026-NIL01" />
+                  <button class="button button-dark" id="verify-button">Verify <span>→</span></button>
+                </div>
+                <div class="demo-pills">
+                  <span>Try authentic batches:</span>
+                  <button class="inline-pill" data-demo-batch="HC-KVIC-2026-NIL01">Nilgiri Forest</button>
+                  <button class="inline-pill" data-demo-batch="HC-KVIC-2026-KSH02">Kashmir Acacia</button>
+                  <button class="inline-pill" data-demo-batch="HC-KVIC-2026-SUN03">Sundarbans</button>
+                  <button class="inline-pill" data-demo-batch="HC-KVIC-2026-CRG04">Coorg Jamun</button>
+                </div>
+                <div style="margin-top: 18px; display: flex; gap: 10px;">
+                  <button class="button button-outline" id="show-qr-btn">📷 View QR Code</button>
+                  <button class="button button-amber" onclick="honeyApp.switchSubView('cust-trace')">📜 View Full Traceability</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Verification Result Preview -->
+            <div id="verify-quick-result"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 4. 📜 Traceability -->
+      <div class="subview-content" id="cust-trace">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div style="margin-bottom: 20px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">COMPLETE PROVENANCE PASSPORT</p>
+            <h2 style="font-size: 2rem; font-weight: 800;">End-to-End Honey Traceability</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Verified digital passport from tribal bee box to testing lab, processing, and packaging.</p>
+          </div>
+          <!-- Full Trace Passport Container -->
+          <div id="trace-result"></div>
+        </section>
+      </div>
+
+      <!-- 5. 📦 My Orders -->
+      <div class="subview-content" id="cust-orders">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">PURCHASE HISTORY</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">My Verified Honey Orders</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Track shipments and download cryptographic certificates of authenticity for your jars.</p>
+          </div>
+
+          <div class="order-card">
+            <div class="order-info">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <strong>Order #HC-2026-8812</strong>
+                <span class="order-badge badge-delivered">● Delivered</span>
+              </div>
+              <p style="font-size: 0.85rem; color: #57534e; margin-top: 4px;">1x Nilgiri Wild Forest Multiflora (350g) · Batch: <strong>HC-KVIC-2026-NIL01</strong></p>
+              <small style="color: #78716c;">Delivered on 02 Sep 2026 · Shipped via BlueDart Express</small>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="inline-pill" onclick="honeyApp.verifyBatch('HC-KVIC-2026-NIL01'); honeyApp.switchSubView('cust-trace');">View Passport ↗</button>
+              <button class="inline-pill" onclick="window.print()">📄 Invoice & Certificate</button>
+            </div>
+          </div>
+
+          <div class="order-card">
+            <div class="order-info">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <strong>Order #HC-2026-9041</strong>
+                <span class="order-badge badge-in_transit">● In Transit</span>
+              </div>
+              <p style="font-size: 0.85rem; color: #57534e; margin-top: 4px;">1x Kashmir White Acacia (350g) · Batch: <strong>HC-KVIC-2026-KSH02</strong></p>
+              <small style="color: #78716c;">Dispatched from Srinagar Khadi Hub · Expected 14 Sep 2026</small>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="inline-pill" onclick="honeyApp.verifyBatch('HC-KVIC-2026-KSH02'); honeyApp.switchSubView('cust-trace');">View Passport ↗</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 6. 🛒 Cart -->
+      <div class="subview-content" id="cust-cart">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto;">
+            <div style="margin-bottom: 20px;">
+              <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">CHECKOUT BAG</p>
+              <h2 style="font-size: 1.8rem; font-weight: 800;">Your Honey Bag (<span class="cart-count">0</span>)</h2>
+            </div>
+            <div id="cart-page-items" style="margin-bottom: 20px;"></div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; padding: 16px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-bottom: 20px;">
+              <span>Total Amount</span>
+              <span id="cart-page-total">₹0</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="button button-outline" style="flex: 1; justify-content: center;" onclick="honeyApp.switchSubView('cust-shop')">← Continue Shopping</button>
+              <button class="button button-amber" style="flex: 1.5; justify-content: center;" onclick="alert('Demo Checkout: Orders are routed directly to KVIC rural beekeeping cooperatives!')">Proceed to Secure Checkout <span>→</span></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 7. 👤 My Profile -->
+      <div class="subview-content" id="cust-profile">
+        <section class="trace-section" style="margin-top: 32px;">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto;">
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 24px;">
+              <div class="auth-avatar-circle" style="width: 64px; height: 64px; font-size: 2rem;">👤</div>
+              <div>
+                <h3 style="font-size: 1.4rem; font-weight: 800;">Ananya Sharma</h3>
+                <p style="font-size: 0.85rem; color: #78716c;">Member ID: <strong>HC-USER-4412</strong> · Verified Honey Club</p>
+                <span class="passport-tag" style="margin-top: 6px;">🛡️ 100% Purity Advocate</span>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Email Address</label>
+                <input type="text" value="ananya.sharma@gmail.com" readonly />
+              </div>
+              <div class="form-field">
+                <label>Mobile Number</label>
+                <input type="text" value="+91 98450 11234" readonly />
+              </div>
+              <div class="form-field" style="grid-column: span 2;">
+                <label>Default Shipping Address</label>
+                <input type="text" value="42, 4th Cross, Koramangala 3rd Block, Bengaluru, Karnataka - 560034" readonly />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         PORTAL 2: 🐝 BEEKEEPER LOGIN VIEW
+         Order:
+         1. 🏠 Beekeeper Dashboard
+         2. 🐝 My Bee Boxes
+         3. 📡 IoT Hive Telemetry
+         4. 🧠 AI Disease Diagnostics
+         5. 📊 Honey Yield Forecast
+         6. 🍯 Register Harvest
+         7. 📦 My Honey Batches
+         8. 📱 Generate QR
+         9. 💰 Payment / Procurement Status
+         10. 👤 Profile
+         ======================================================== -->
+    <div class="role-portal-view" id="portal-beekeeper">
+      <div class="portal-container">
+        
+        <!-- 1. 🏠 Beekeeper Dashboard -->
+        <div class="subview-content active" id="bk-dash">
+          <div class="portal-welcome">
+            <div>
+              <span class="kvic-badge-pill" style="background: #fde68a; color: #78350f; border-color: #d97706;">KISAN SAATHI PORTAL</span>
+              <h2 style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;">Welcome, Ramaswamy K.</h2>
+              <p style="font-size: 0.9rem; color: #78716c;">Member ID: <strong>KVIC-BEE-TN-9810</strong> · Kotagiri Cluster (Nilgiris)</p>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: #78716c;">Select Vernacular Language:</span>
+              <div class="lang-selector">
+                <button class="lang-btn active">English</button>
+                <button class="lang-btn">हिन्दी</button>
+                <button class="lang-btn">தமிழ்</button>
+                <button class="lang-btn">ಕನ್ನಡ</button>
+                <button class="lang-btn">मराठी</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="passport-grid" style="margin-bottom: 32px;">
+            <div class="passport-tile" style="cursor: pointer;" onclick="honeyApp.switchSubView('bk-boxes')">
+              <div class="passport-tile-label">Allocated KVIC Bee Boxes</div>
+              <div class="passport-tile-value" style="font-size: 1.5rem; color: var(--color-amber-700);">10 Smart Boxes ↗</div>
+              <div class="passport-tile-sub">100% equipped with IoT Load Cells & Mic</div>
+            </div>
+            <div class="passport-tile" style="cursor: pointer;" onclick="honeyApp.switchSubView('bk-batches')">
+              <div class="passport-tile-label">Total Season Harvest</div>
+              <div class="passport-tile-value" style="font-size: 1.5rem; color: #059669;">340 kg ↗</div>
+              <div class="passport-tile-sub">All batches verified on blockchain</div>
+            </div>
+            <div class="passport-tile" style="cursor: pointer;" onclick="honeyApp.switchSubView('bk-payout')">
+              <div class="passport-tile-label">Direct Bank Payout Received</div>
+              <div class="passport-tile-value" style="font-size: 1.5rem; color: #0284c7;">₹1,42,800 ↗</div>
+              <div class="passport-tile-sub">DBT transferred directly via PFMS</div>
+            </div>
+            <div class="passport-tile">
+              <div class="passport-tile-label">KVIC Quality Grade</div>
+              <div class="passport-tile-value" style="font-size: 1.5rem; color: #7c3aed;">Special Grade A+</div>
+              <div class="passport-tile-sub">NMR purity certified · Moisture 17.8%</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px;">
+            <button class="button button-amber" style="justify-content: center;" onclick="honeyApp.switchSubView('bk-harvest')">🍯 Register New Harvest</button>
+            <button class="button button-dark" style="justify-content: center;" onclick="honeyApp.switchSubView('bk-iot')">📡 View Live IoT Hive</button>
+            <button class="button button-dark" style="justify-content: center;" onclick="honeyApp.switchSubView('bk-ai')">🧠 Scan Frame with AI</button>
+            <button class="button button-outline" style="justify-content: center;" onclick="honeyApp.switchSubView('bk-yield')">📊 Forecast Next Yield</button>
+          </div>
+        </div>
+
+        <!-- 2. 🐝 My Bee Boxes -->
+        <div class="subview-content" id="bk-boxes">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">HIVE ASSET MANAGEMENT</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">Allocated Smart Bee Boxes</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Subsidized by KVIC Honey Mission · Kotagiri Apiary Cluster</p>
+          </div>
+
+          <div class="bee-boxes-grid">
+            <div class="bee-box-card">
+              <div class="bee-box-header">
+                <span class="bee-box-serial">KVIC-TB-NIL-4082</span>
+                <span class="order-badge badge-delivered">● Active & Live</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #57534e; display: flex; flex-direction: column; gap: 4px;">
+                <span>Weight: <strong>32.4 kg</strong> (+0.6kg flow)</span>
+                <span>Brood Temp: <strong>34.2°C</strong> (Optimal)</span>
+                <span>Solar Battery: <strong>94%</strong> · LoRa: Strong</span>
+                <span>Queen Status: <strong>Active & Laying</strong></span>
+              </div>
+              <button class="inline-pill" style="margin-top: 12px; width: 100%;" onclick="honeyApp.switchSubView('bk-iot')">View Telemetry Stream ↗</button>
+            </div>
+
+            <div class="bee-box-card">
+              <div class="bee-box-header">
+                <span class="bee-box-serial">KVIC-TB-NIL-4083</span>
+                <span class="order-badge badge-delivered">● Active & Live</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #57534e; display: flex; flex-direction: column; gap: 4px;">
+                <span>Weight: <strong>31.8 kg</strong></span>
+                <span>Brood Temp: <strong>34.0°C</strong></span>
+                <span>Solar Battery: <strong>91%</strong> · LoRa: Strong</span>
+                <span>Queen Status: <strong>Active</strong></span>
+              </div>
+              <button class="inline-pill" style="margin-top: 12px; width: 100%;" onclick="honeyApp.switchSubView('bk-iot')">View Telemetry Stream ↗</button>
+            </div>
+
+            <div class="bee-box-card">
+              <div class="bee-box-header">
+                <span class="bee-box-serial">KVIC-TB-NIL-4084</span>
+                <span class="order-badge badge-delivered">● Active & Live</span>
+              </div>
+              <div style="font-size: 0.85rem; color: #57534e; display: flex; flex-direction: column; gap: 4px;">
+                <span>Weight: <strong>33.1 kg</strong></span>
+                <span>Brood Temp: <strong>34.5°C</strong></span>
+                <span>Solar Battery: <strong>96%</strong> · LoRa: Strong</span>
+                <span>Queen Status: <strong>Active</strong></span>
+              </div>
+              <button class="inline-pill" style="margin-top: 12px; width: 100%;" onclick="honeyApp.switchSubView('bk-iot')">View Telemetry Stream ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 📡 IoT Hive Telemetry -->
+        <div class="subview-content" id="bk-iot">
+          <div class="dark-dashboard" style="border-radius: 20px; margin-top: 10px;">
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h2><span>📡</span> Smart Hive IoT Telemetry Center</h2>
+                <p class="dashboard-subtitle">Active Hive: <strong>KVIC-BOX-NIL-4082</strong> (Kotagiri Apiary) · Connected via LoRaWAN Gateway #04</p>
+              </div>
+              <div class="hive-status-badge">
+                <span class="live-pulsing-dot"></span>
+                <span>STREAM ACTIVE (2.5s)</span>
+              </div>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="sim-controls-bar">
+              <div>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #f8fafc; margin-right: 12px;">Simulate Hive Event:</span>
+                <span style="font-size: 0.75rem; color: var(--color-dark-muted);">Test how sensors and alerts react</span>
+              </div>
+              <div class="sim-btn-group">
+                <button class="sim-btn active" data-mode="normal">Optimal Foraging (Normal)</button>
+                <button class="sim-btn" data-mode="preswarm">⚠️ Pre-Swarm Frenzy (490 Hz)</button>
+                <button class="sim-btn" data-mode="heatwave">🔥 Heatwave (>38°C)</button>
+                <button class="sim-btn" data-mode="nectar_peak">🍯 Nectar Flow Surge (+kg)</button>
+                <button class="sim-btn" data-mode="queenless">🚨 Queenless Colony Roar</button>
+              </div>
+            </div>
+
+            <!-- Gauges Grid -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon-wrap">🌡️</div>
+                <div class="metric-label">Internal Brood Temp</div>
+                <div class="metric-value" id="iot-temp-val">34.2°C</div>
+                <div class="metric-status" id="iot-temp-status">Optimal Range (32-35°C)</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon-wrap">💧</div>
+                <div class="metric-label">Hive Humidity</div>
+                <div class="metric-value" id="iot-hum-val">58.4%</div>
+                <div class="metric-status">Good Evaporation (50-65%)</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon-wrap">⚖️</div>
+                <div class="metric-label">Gross Hive Weight</div>
+                <div class="metric-value" id="iot-weight-val">32.4 kg</div>
+                <div class="metric-status" style="color: #38bdf8;">+0.6 kg today (Honey Flow)</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon-wrap">🎵</div>
+                <div class="metric-label">Acoustic Vibration</div>
+                <div class="metric-value" id="iot-freq-val">215 Hz</div>
+                <div class="metric-status" id="iot-acoustic-status">Healthy Worker Hum</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon-wrap">💨</div>
+                <div class="metric-label">Air Quality (CO2)</div>
+                <div class="metric-value" id="iot-co2-val">580 ppm</div>
+                <div class="metric-status">Well Ventilated</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon-wrap">🔋</div>
+                <div class="metric-label">Solar LiFePO4 Battery</div>
+                <div class="metric-value" id="iot-battery-val">94%</div>
+                <div class="metric-status">LoRa Signal -78 dBm (Strong)</div>
+              </div>
+            </div>
+
+            <!-- Spectrogram & Charts -->
+            <div class="charts-grid">
+              <div class="chart-card">
+                <div class="chart-header">
+                  <h4>🎙️ Acoustic Vibration Spectrogram & Waveform</h4>
+                  <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-amber-400);" id="iot-queen-status">Active & Healthy Brood Nest</span>
+                </div>
+                <canvas id="spectrogram-canvas" class="spectrogram-canvas" width="600" height="200"></canvas>
+                <div style="margin-top: 12px; display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-dark-muted); font-family: var(--font-mono);">
+                  <span>Acoustic FFT Analysis: 100 Hz - 800 Hz</span>
+                  <span>Swarm Risk Score: <strong id="iot-swarm-risk" style="color: #10b981;">14%</strong></span>
+                </div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-header">
+                  <h4>📈 Internal Brood Temperature Trend (°C)</h4>
+                  <span style="font-size: 0.75rem; color: var(--color-dark-muted);">Target: 34.5°C</span>
+                </div>
+                <canvas id="temp-chart" class="telemetry-chart" width="600" height="200"></canvas>
+              </div>
+            </div>
+
+            <div class="charts-grid">
+              <div class="chart-card">
+                <div class="chart-header">
+                  <h4>⚖️ Nectar Honey Accumulation / Hive Weight (kg)</h4>
+                  <span style="font-size: 0.75rem; color: #10b981;">Load Cell Resolution: ±10g</span>
+                </div>
+                <canvas id="weight-chart" class="telemetry-chart" width="600" height="200"></canvas>
+              </div>
+
+              <div class="chart-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div class="chart-header">
+                    <h4>🚨 Automated Alert Thresholds & Micro-actions</h4>
+                    <span style="font-size: 0.75rem; color: #f59e0b;">Edge Microcontroller Rules</span>
+                  </div>
+                  <div style="font-size: 0.85rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                      <span style="color: #ef4444;">●</span>
+                      <span><strong>Pre-Swarm Detection:</strong> Audio >450 Hz for >3 hours sends urgent SMS alert to beekeeper to add supers or split colony.</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                      <span style="color: #f59e0b;">●</span>
+                      <span><strong>Heat Exhaustion:</strong> Temp >38°C triggers solar-powered micro-ventilation fan.</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                      <span style="color: #10b981;">●</span>
+                      <span><strong>Harvest Readiness:</strong> Weight surplus +15kg over baseline triggers KVIC honey extractor team deployment.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 🧠 AI Disease Diagnostics -->
+        <div class="subview-content" id="bk-ai">
+          <div class="dark-dashboard" style="border-radius: 20px; margin-top: 10px;">
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h2><span>🧠</span> AI Disease Inspector & Smart Beekeeping Analytics</h2>
+                <p class="dashboard-subtitle">Edge AI Computer Vision for Colony Health & KVIC Scientific Management</p>
+              </div>
+              <label class="button button-amber" style="font-size: 0.82rem; padding: 8px 16px; cursor: pointer;">
+                <span>📷 Upload Hive Inspection Photo</span>
+                <input type="file" id="ai-custom-file" accept="image/*" style="display: none;" />
+              </label>
+            </div>
+
+            <!-- Presets -->
+            <div class="ai-selector-row">
+              <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; align-self: center; margin-right: 8px;">Inspection Presets:</span>
+              <button class="ai-sample-pill active" data-sample="varroa">🕷️ Varroa Mite Parasites</button>
+              <button class="ai-sample-pill" data-sample="foulbrood">🦠 American Foulbrood (AFB)</button>
+              <button class="ai-sample-pill" data-sample="waxmoth">🐛 Greater Wax Moth Webbing</button>
+              <button class="ai-sample-pill" data-sample="healthy">✨ Healthy Queenright Brood</button>
+            </div>
+
+            <div class="ai-lab-grid">
+              <div class="ai-camera-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <h4 style="font-size: 0.95rem; color: #ffffff;">Neural Network Vision Feed</h4>
+                  <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-amber-400);">YOLOv8-BeeGuard / MobileNetV3</span>
+                </div>
+                <canvas id="vision-canvas" width="640" height="380"></canvas>
+              </div>
+
+              <div class="ai-report-card" id="ai-report-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 📊 Honey Yield Forecast -->
+        <div class="subview-content" id="bk-yield">
+          <div style="background: var(--color-dark-card); border: 1px solid var(--color-dark-border); border-radius: 18px; padding: 28px; margin-top: 10px;">
+            <div class="dashboard-header" style="margin-bottom: 20px;">
+              <div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: #ffffff;">📊 Machine Learning Honey Yield Forecaster</h3>
+                <p style="font-size: 0.85rem; color: var(--color-dark-muted);">Predicts surplus honey extraction date and market valuation based on forage density, weather, and weight velocity.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div class="form-field">
+                <label style="color: #cbd5e1; font-size: 0.8rem;">Number of Bee Boxes</label>
+                <input type="number" id="pred-box-count" value="10" min="1" max="100" style="background: #090e17; border: 1px solid var(--color-dark-border); color: #ffffff; padding: 10px; border-radius: 8px;" />
+              </div>
+              <div class="form-field">
+                <label style="color: #cbd5e1; font-size: 0.8rem;">Primary Floral Bloom</label>
+                <select id="pred-flora" style="background: #090e17; border: 1px solid var(--color-dark-border); color: #ffffff; padding: 10px; border-radius: 8px;">
+                  <option value="multiflora">Nilgiri Multiflora / Wild Forest</option>
+                  <option value="acacia">Kashmir White Acacia</option>
+                  <option value="jamun">Coorg Jamun & Coffee</option>
+                  <option value="mangrove">Sundarbans Mangrove (Khalsi)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label style="color: #cbd5e1; font-size: 0.8rem;">Daily Nectar Gain Rate (kg/box/day)</label>
+                <input type="number" id="pred-weight-vel" value="0.6" step="0.1" min="0.1" max="3" style="background: #090e17; border: 1px solid var(--color-dark-border); color: #ffffff; padding: 10px; border-radius: 8px;" />
+              </div>
+              <div style="display: flex; align-items: flex-end;">
+                <button class="button button-amber" id="calc-yield-btn" style="width: 100%; justify-content: center;">Run ML Prediction <span>⚡</span></button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: #090e17; padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--color-dark-muted); text-transform: uppercase;">Estimated Surplus Yield</span>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #10b981; font-family: var(--font-mono);" id="pred-result-kg">108 kg</div>
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; color: var(--color-dark-muted); text-transform: uppercase;">Optimal Extraction Window</span>
+                <div style="font-size: 1.4rem; font-weight: 700; color: #fbbf24; font-family: var(--font-mono);" id="pred-result-date">24 Sep 2026</div>
+              </div>
+              <div>
+                <span style="font-size: 0.75rem; color: var(--color-dark-muted); text-transform: uppercase;">Guaranteed KVIC Fair Payout</span>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #38bdf8; font-family: var(--font-mono);" id="pred-result-val">₹45,360</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 🍯 Register Harvest -->
+        <div class="subview-content" id="bk-harvest">
+          <div class="form-card">
+            <div style="margin-bottom: 24px;">
+              <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">DIRECT-TO-CHAIN LOGGING</p>
+              <h3 style="font-size: 1.4rem; font-weight: 800;">Log New Honey Harvest & Generate Blockchain Batch</h3>
+              <p style="font-size: 0.85rem; color: #57534e;">Records raw harvest metadata directly onto the immutable distributed ledger.</p>
+            </div>
+
+            <form id="kisan-harvest-form">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Beekeeper Full Name</label>
+                  <input type="text" id="kisan-keeper-name" value="Ramaswamy K." required />
+                </div>
+
+                <div class="form-field">
+                  <label>KVIC Bee Box Serial Number</label>
+                  <input type="text" id="kisan-box-id" value="KVIC-TB-NIL-4082" required />
+                </div>
+
+                <div class="form-field">
+                  <label>Primary Nectar Floral Source</label>
+                  <select id="kisan-flora">
+                    <option value="Kurunji, Jamun & Wild Mountain Flora">Kurunji, Jamun & Wild Mountain Flora</option>
+                    <option value="Robinia Pseudoacacia (White Acacia)">Robinia White Acacia</option>
+                    <option value="Khalsi & Mangrove Bloom">Khalsi & Mangrove Bloom</option>
+                    <option value="Mustard & Organic Rapeseed">Mustard & Organic Rapeseed</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label>Harvest Quantity (kg)</label>
+                  <input type="number" id="kisan-weight" value="45" min="5" max="500" required />
+                </div>
+
+                <div class="form-field">
+                  <label>Refractometer Moisture % (Target &lt;20%)</label>
+                  <input type="text" id="kisan-moisture" value="18.0" required />
+                </div>
+
+                <div class="form-field">
+                  <label>Cooperative Cluster</label>
+                  <input type="text" id="kisan-cluster" value="Nilgiris Adivasi Beekeeping Society" required />
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="button button-amber">
+                  <span>🛡️ Mine & Mint Blockchain Batch</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 7. 📦 My Honey Batches -->
+        <div class="subview-content" id="bk-batches">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">BLOCKCHAIN INVENTORY</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">My Registered Honey Batches</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Verified batch serials with dynamic QR code generation.</p>
+          </div>
+
+          <div id="bk-batches-list">
+            <div class="order-card">
+              <div class="order-info">
+                <strong style="font-size: 1.1rem; color: var(--color-amber-800);">Batch #HC-KVIC-2026-NIL01</strong>
+                <p style="font-size: 0.85rem; color: #57534e;">Wild Forest Multiflora · 120 kg · Moisture: 17.8% · Box: KVIC-TB-NIL-4082</p>
+                <small style="color: #059669; font-weight: 700;">✅ Certified by KVIC Central Lab, Pune · Agmark Special Grade</small>
+              </div>
+              <button class="button button-dark" onclick="honeyApp.openQRModal('HC-KVIC-2026-NIL01')">📱 Generate QR</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. 📱 Generate QR -->
+        <div class="subview-content" id="bk-qr">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto; text-align: center;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">LABEL QR PRINTER</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Generate Batch QR Label</h2>
+            <p style="font-size: 0.88rem; color: #78716c; margin-bottom: 24px;">Print verified QR stickers for individual honey jars.</p>
+            
+            <div class="form-field" style="max-width: 320px; margin: 0 auto 20px;">
+              <label>Select Your Registered Batch</label>
+              <select id="bk-qr-select" onchange="honeyApp.renderBeekeeperQR(this.value)">
+                <option value="HC-KVIC-2026-NIL01">HC-KVIC-2026-NIL01 (Nilgiri Forest)</option>
+              </select>
+            </div>
+
+            <div id="bk-qr-display" style="display: inline-block; padding: 20px; background: #ffffff; border: 1px solid #e7e5e4; border-radius: 16px; margin-bottom: 16px;"></div>
+            <div>
+              <button class="button button-dark" onclick="window.print()">🖨️ Print QR Jar Labels</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. 💰 Payment / Procurement Status -->
+        <div class="subview-content" id="bk-payout">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">FINANCIAL SETTLEMENT</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">PFMS Direct Benefit Transfer (DBT) Ledger</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Guaranteed Minimum Support Price (MSP) paid directly to Aadhaar-linked bank account.</p>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Batch Ref</th>
+                  <th>Harvest Qty</th>
+                  <th>Rate / kg</th>
+                  <th>Total Amount</th>
+                  <th>Bank Account</th>
+                  <th>Payment Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>PFMS-KVIC-8812</strong></td>
+                  <td>HC-KVIC-2026-NIL01</td>
+                  <td>120 kg</td>
+                  <td>₹420 / kg</td>
+                  <td><strong style="color: #059669;">₹50,400</strong></td>
+                  <td>SBI A/c **4120</td>
+                  <td><span class="status-pill-active">Disbursed (Success)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>PFMS-KVIC-8219</strong></td>
+                  <td>HC-KVIC-2026-NIL-PREV</td>
+                  <td>220 kg</td>
+                  <td>₹420 / kg</td>
+                  <td><strong style="color: #059669;">₹92,400</strong></td>
+                  <td>SBI A/c **4120</td>
+                  <td><span class="status-pill-active">Disbursed (Success)</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 10. 👤 Profile -->
+        <div class="subview-content" id="bk-profile">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto;">
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 24px;">
+              <div class="auth-avatar-circle" style="width: 64px; height: 64px; font-size: 2rem;">🐝</div>
+              <div>
+                <h3 style="font-size: 1.4rem; font-weight: 800;">Ramaswamy K.</h3>
+                <p style="font-size: 0.85rem; color: #78716c;">Member ID: <strong>KVIC-BEE-TN-9810</strong> · Kotagiri, Nilgiris</p>
+                <span class="passport-tag" style="margin-top: 6px;">Certified KVIC Honey Mission Master Beekeeper</span>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Cooperative Society</label>
+                <input type="text" value="Nilgiris Adivasi Beekeeping Society" readonly />
+              </div>
+              <div class="form-field">
+                <label>Allocated Smart Boxes</label>
+                <input type="text" value="10 Boxes (All IoT Active)" readonly />
+              </div>
+              <div class="form-field">
+                <label>Extraction Toolkit Serial</label>
+                <input type="text" value="KVIC-KIT-TN-2026-19" readonly />
+              </div>
+              <div class="form-field">
+                <label>Aadhaar DBT Status</label>
+                <input type="text" value="Verified & Active (SBI Kotagiri)" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         PORTAL 3: 🏢 KVIC OFFICER LOGIN VIEW
+         Order:
+         1. 🏠 KVIC Dashboard
+         2. 🐝 Beekeeper/Cluster Monitoring
+         3. 🍯 Honey Batch Approval
+         4. 🧪 Lab/NMR Certification
+         5. ✅ Quality Certification
+         6. 📊 National Honey Quality Monitoring
+         7. ⛓️ Blockchain Records
+         8. 📱 QR Passport Verification
+         9. 🚨 Alerts
+         10. 📈 Reports
+         ======================================================== -->
+    <div class="role-portal-view" id="portal-kvic">
+      <div class="portal-container">
+        
+        <!-- 1. 🏠 KVIC Dashboard -->
+        <div class="subview-content active" id="kvic-dash">
+          <div class="portal-welcome" style="background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%); border-color: #bae6fd;">
+            <div>
+              <span class="kvic-badge-pill" style="background: #bae6fd; color: #0369a1; border-color: #0284c7;">KVIC ADMINISTRATIVE & LAB PORTAL</span>
+              <h2 style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;">National Honey Quality & Cluster Oversight</h2>
+              <p style="font-size: 0.9rem; color: #57534e;">Nodal Authority: Central Honey Quality Testing Laboratory, Pune & KVIC Nodal Directorate</p>
+            </div>
+            <div>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; background: #ffffff; padding: 6px 14px; border-radius: 8px; border: 1px solid #bae6fd; font-weight: 700;">
+                Officer: Dr. A. Sharma (Quality Dir.)
+              </span>
+            </div>
+          </div>
+
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('kvic-clusters')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">ACTIVE STATE CLUSTERS</span>
+              <div class="admin-stat-number" style="color: #0284c7;">5 States ↗</div>
+              <span style="font-size: 0.75rem; color: #10b981;">5,150 Subsidized Boxes Monitored</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('kvic-approval')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">PENDING LAB APPROVALS</span>
+              <div class="admin-stat-number" style="color: #d97706;">3 Batches ↗</div>
+              <span style="font-size: 0.75rem; color: #d97706;">NMR & Moisture checks awaiting sign-off</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('kvic-alerts')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">QUALITY ALERTS</span>
+              <div class="admin-stat-number" style="color: #ef4444;">0 Critical ↗</div>
+              <span style="font-size: 0.75rem; color: #10b981;">All batches NMR C4 compliant</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('kvic-blockchain')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">BLOCKCHAIN VALIDATION</span>
+              <div class="admin-stat-number" style="color: #7c3aed;">100% Valid ↗</div>
+              <span style="font-size: 0.75rem; color: #7c3aed;">SHA-256 Proof-of-Authority</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 🐝 Beekeeper/Cluster Monitoring -->
+        <div class="subview-content" id="kvic-clusters">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">REGIONAL HUBS</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">KVIC Honey Mission Active Clusters</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Monitoring rural clusters, subsidized box allocation, and harvest authenticity.</p>
+          </div>
+
+          <div class="cluster-table-wrap">
+            <table class="cluster-table">
+              <thead>
+                <tr>
+                  <th>Cluster Region</th>
+                  <th>State</th>
+                  <th>Subsidized Boxes</th>
+                  <th>IoT Monitored</th>
+                  <th>Dominant Flora</th>
+                  <th>Season Production</th>
+                  <th>NMR Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Kotagiri, Nilgiris</strong></td>
+                  <td>Tamil Nadu</td>
+                  <td>1,200</td>
+                  <td><span style="color:#10b981;">● 840 Live</span></td>
+                  <td>Kurunji & Wild Mountain</td>
+                  <td>42,500 kg</td>
+                  <td><span class="passport-tag" style="font-size: 0.72rem;">100% Passed</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Pampore, Pulwama</strong></td>
+                  <td>Jammu & Kashmir</td>
+                  <td>950</td>
+                  <td><span style="color:#10b981;">● 720 Live</span></td>
+                  <td>Robinia White Acacia</td>
+                  <td>31,200 kg</td>
+                  <td><span class="passport-tag" style="font-size: 0.72rem;">100% Passed</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Gosaba, Sundarbans</strong></td>
+                  <td>West Bengal</td>
+                  <td>1,500</td>
+                  <td><span style="color:#10b981;">● 980 Live</span></td>
+                  <td>Khalsi & Bain Mangrove</td>
+                  <td>58,900 kg</td>
+                  <td><span class="passport-tag" style="font-size: 0.72rem;">100% Passed</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Madikeri, Coorg</strong></td>
+                  <td>Karnataka</td>
+                  <td>800</td>
+                  <td><span style="color:#10b981;">● 610 Live</span></td>
+                  <td>Jamun & Arabica Coffee</td>
+                  <td>28,400 kg</td>
+                  <td><span class="passport-tag" style="font-size: 0.72rem;">100% Passed</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Sangli & Mahabaleshwar</strong></td>
+                  <td>Maharashtra</td>
+                  <td>700</td>
+                  <td><span style="color:#10b981;">● 520 Live</span></td>
+                  <td>Orange Blossom & Jamun</td>
+                  <td>22,100 kg</td>
+                  <td><span class="passport-tag" style="font-size: 0.72rem;">100% Passed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. 🍯 Honey Batch Approval -->
+        <div class="subview-content" id="kvic-approval">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">PROVENANCE QUEUE</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">Incoming Harvest Batch Approval</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Review raw harvest submissions from rural beekeepers and approve for NMR testing.</p>
+          </div>
+
+          <div class="order-card">
+            <div class="order-info">
+              <strong style="font-size: 1.05rem;">Batch #HC-KVIC-2026-NIL01 (Nilgiri Multiflora)</strong>
+              <p style="font-size: 0.85rem; color: #57534e;">Submitted by: Ramaswamy K. · 120 kg · Moisture: 18.1% · Box: KVIC-TB-NIL-4082</p>
+              <small style="color: #0284c7;">Awaiting final quality seal</small>
+            </div>
+            <button class="button button-dark" onclick="honeyApp.switchSubView('kvic-nmr')">Perform Lab Certification <span>→</span></button>
+          </div>
+        </div>
+
+        <!-- 4. 🧪 Lab/NMR Certification -->
+        <div class="subview-content" id="kvic-nmr">
+          <div class="form-card">
+            <div style="margin-bottom: 24px;">
+              <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">LABORATORY TESTING</p>
+              <h3 style="font-size: 1.4rem; font-weight: 800;">Digitally Sign & Certify Honey Batch with NMR Lab Results</h3>
+              <p style="font-size: 0.85rem; color: #57534e;">Once verified by NMR spectrometry, results are signed with KVIC digital keys and attached to the block.</p>
+            </div>
+
+            <form id="kvic-lab-form">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Target Honey Batch ID</label>
+                  <input type="text" id="kvic-target-batch" value="HC-KVIC-2026-NIL01" required />
+                </div>
+
+                <div class="form-field">
+                  <label>NMR C4 Sugar Profile (&lt;5% required)</label>
+                  <input type="text" id="kvic-c4-val" value="0.7% (C4 Sugars Passed - Pure Honey)" required />
+                </div>
+
+                <div class="form-field">
+                  <label>Hydroxymethylfurfural (HMF &lt;40 mg/kg)</label>
+                  <input type="text" id="kvic-hmf-val" value="11.2 mg/kg" required />
+                </div>
+
+                <div class="form-field">
+                  <label>Moisture Content (&lt;20%)</label>
+                  <input type="text" id="kvic-moisture-val" value="17.6%" required />
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="button button-dark">
+                  <span>🖋️ Apply Digital Signature & Cryptographic Stamp</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 5. ✅ Quality Certification -->
+        <div class="subview-content" id="kvic-quality">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">COMPLIANCE STAMP</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Official Quality Certification</h2>
+            <p style="font-size: 0.88rem; color: #78716c; margin-bottom: 20px;">FSSAI 2.8.4 & AGMARK compliance verification checklist.</p>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; font-size: 0.9rem;">
+              <div>✅ <strong>NMR Sugar Profile:</strong> C4 Sugar &lt; 5%, C3 Sugar &lt; 1% (Confirmed No Corn or Rice Syrups)</div>
+              <div>✅ <strong>Moisture Level:</strong> 17.6% (Strictly below statutory 20% limit)</div>
+              <div>✅ <strong>HMF Level:</strong> 11.2 mg/kg (No overheating or thermal caramelization)</div>
+              <div>✅ <strong>Pollen Authenticity:</strong> 98.6% Native Flora (Kurunji / Jamun / Mountain Flora)</div>
+              <div>✅ <strong>Antibiotic Residues:</strong> Not Detected (ND)</div>
+            </div>
+            <button class="button button-amber" onclick="alert('Generating official KVIC Quality Certificate stamp...'); window.print();">Issue AGMARK Special Grade Certificate <span>↗</span></button>
+          </div>
+        </div>
+
+        <!-- 6. 📊 National Honey Quality Monitoring -->
+        <div class="subview-content" id="kvic-national">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">NATIONAL SURVEILLANCE</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">National Honey Quality Monitoring</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Continuous monitoring of moisture and NMR purity across regional states.</p>
+          </div>
+
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card"><span style="font-size:0.75rem; color:#78716c;">NATIONAL MEAN MOISTURE</span><div class="admin-stat-number" style="color:#059669;">17.4%</div><span>Safe Limit: &lt;20%</span></div>
+            <div class="admin-stat-card"><span style="font-size:0.75rem; color:#78716c;">NMR TEST PASS RATE</span><div class="admin-stat-number" style="color:#0284c7;">99.4%</div><span>100% C4 Sugar Free</span></div>
+            <div class="admin-stat-card"><span style="font-size:0.75rem; color:#78716c;">TOTAL PURITY AUDITS</span><div class="admin-stat-number" style="color:#7c3aed;">4,280 Jars</div><span>Across 24 Khadi Bhavans</span></div>
+          </div>
+        </div>
+
+        <!-- 7. ⛓️ Blockchain Records -->
+        <div class="subview-content" id="kvic-blockchain">
+          <div class="dark-dashboard" style="border-radius: 20px; margin-top: 10px;">
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h2><span>⛓️</span> KVIC Blockchain Ledger Audit</h2>
+                <p class="dashboard-subtitle">Inspect SHA-256 blocks, Merkle trees, and cryptographic signers</p>
+              </div>
+            </div>
+            <div id="chain-integrity-banner-kvic" style="margin-bottom: 24px;"></div>
+            <div class="chain-grid" id="blockchain-block-list-kvic"></div>
+          </div>
+        </div>
+
+        <!-- 8. 📱 QR Passport Verification -->
+        <div class="subview-content" id="kvic-qr">
+          <div class="form-card" style="max-width: 680px; margin: 0 auto; text-align: center;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">RETAIL FIELD AUDIT</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Officer QR Passport Verification Tool</h2>
+            <p style="font-size: 0.88rem; color: #78716c; margin-bottom: 24px;">Scan retail market jars to instantly verify cryptographic signature and lab records.</p>
+            <div class="input-row" style="max-width: 380px; margin: 0 auto 20px;">
+              <input id="kvic-audit-input" type="text" value="HC-KVIC-2026-NIL01" placeholder="Enter Batch ID..." />
+              <button class="button button-dark" onclick="honeyApp.verifyBatch(document.querySelector('#kvic-audit-input').value); honeyApp.switchSubView('cust-trace');">Audit <span>→</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. 🚨 Alerts -->
+        <div class="subview-content" id="kvic-alerts">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">AUTOMATED QUALITY SURVEILLANCE</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">Real-Time Quality Violation Alerts</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Edge triggers and laboratory NMR deviation warnings.</p>
+          </div>
+
+          <div class="role-guard-banner" style="background: #f0fdf4; border-color: #86efac;">
+            <div class="role-guard-copy">
+              <span style="font-size: 1.5rem;">✅</span>
+              <div>
+                <strong style="color: #166534;">Zero Active Adulteration Violations</strong>
+                <p style="color: #15803d;">All active regional batches are 100% compliant with FSSAI 2.8.4 standards.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="role-guard-banner">
+            <div class="role-guard-copy">
+              <span style="font-size: 1.5rem;">⚠️</span>
+              <div>
+                <strong>Advisory: High Ambient Humidity Warning in Sundarbans Cluster</strong>
+                <p>Gosaba cluster recording 82% ambient humidity. Beekeepers advised to use dehumidifier frames before extraction.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. 📈 Reports -->
+        <div class="subview-content" id="kvic-reports">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: var(--color-amber-700); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">ANALYTICS & EXPORTS</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">National Honey Mission Quarterly Report</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Comprehensive harvest, quality, and economic impact metrics.</p>
+          </div>
+
+          <div class="admin-stat-card" style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 12px;">Q3 2026 Procurement & Production Summary</h4>
+            <ul style="font-size: 0.88rem; color: #57534e; line-height: 1.8; padding-left: 20px;">
+              <li>• Total Pure Honey Procured: <strong>1,83,100 kg</strong></li>
+              <li>• Direct Farmer Procurement Payout: <strong>₹7,69,02,000</strong> (at ₹420/kg pure honey)</li>
+              <li>• NMR Lab Purity Clearance Rate: <strong>99.4%</strong></li>
+              <li>• QR Authenticated Jars in Retail Circulation: <strong>2,48,000 jars</strong></li>
+            </ul>
+            <button class="button button-dark" style="margin-top: 16px;" onclick="window.print()">📥 Export Official PDF Report</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         PORTAL 4: 🔐 SUPER ADMIN LOGIN VIEW
+         Order:
+         1. 🏠 Dashboard
+         2. 👥 User Management (Customers, Beekeepers, KVIC Officers)
+         3. 📦 Batch Management
+         4. 🍯 Honey Products
+         5. 📡 IoT Monitoring
+         6. 🧠 AI Diagnostics
+         7. 🏛️ KVIC Management
+         8. ⛓️ Blockchain
+         9. 📈 Reports
+         10. ⚙️ System Settings
+         ======================================================== -->
+    <div class="role-portal-view" id="portal-admin">
+      <div class="portal-container">
+        
+        <!-- 1. 🏠 Dashboard -->
+        <div class="subview-content active" id="admin-dash">
+          <div class="portal-welcome" style="background: linear-gradient(135deg, #ede9fe 0%, #fdf4ff 100%); border-color: #ddd6fe;">
+            <div>
+              <span class="kvic-badge-pill" style="background: #ede9fe; color: #5b21b6; border-color: #c4b5fd;">SUPER ADMINISTRATOR CONSOLE</span>
+              <h2 style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;">Master Command & System Oversight</h2>
+              <p style="font-size: 0.9rem; color: #57534e;">Full root privileges across User Management, Batches, IoT Grid, AI Models, KVIC Org, and Blockchain Ledger</p>
+            </div>
+            <div>
+              <span style="font-family: var(--font-mono); font-size: 0.85rem; background: #ffffff; padding: 6px 14px; border-radius: 8px; border: 1px solid #ddd6fe; font-weight: 700; color: #5b21b6;">
+                Root Admin: System Supervisor
+              </span>
+            </div>
+          </div>
+
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('admin-users')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">TOTAL SYSTEM USERS</span>
+              <div class="admin-stat-number" style="color: #7c3aed;">3,725 ↗</div>
+              <span style="font-size: 0.75rem; color: #57534e;">2,480 Customers · 1,200 Beekeepers · 45 Officers</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('admin-batches')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">NATIONAL BATCHES</span>
+              <div class="admin-stat-number" style="color: #059669;">1,420 ↗</div>
+              <span style="font-size: 0.75rem; color: #059669;">100% Cryptographically Validated</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('admin-iot')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">LIVE IOT HIVES</span>
+              <div class="admin-stat-number" style="color: #0284c7;">5,150 ↗</div>
+              <span style="font-size: 0.75rem; color: #10b981;">LoRaWAN Mesh Active</span>
+            </div>
+            <div class="admin-stat-card" style="cursor: pointer;" onclick="honeyApp.switchSubView('admin-blockchain')">
+              <span style="font-size: 0.75rem; color: #78716c; font-weight: 700;">BLOCKCHAIN NODES</span>
+              <div class="admin-stat-number" style="color: #d97706;">12 Nodes ↗</div>
+              <span style="font-size: 0.75rem; color: #d97706;">PoA Consensus Equilibrium</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 👥 User Management -->
+        <div class="subview-content" id="admin-users">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: #7c3aed; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">RBAC ACCESS CONTROL</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">User Management</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Manage Customers, Rural Beekeepers, and KVIC Certification Officers.</p>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>User / ID</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Region / Cluster</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Ramaswamy K.</strong><br><small style="color:#78716c;">KVIC-BEE-TN-9810</small></td>
+                  <td><span class="auth-role-tag tag-beekeeper">BEEKEEPER</span></td>
+                  <td>ramaswamy.k@kvic-honey.org</td>
+                  <td>Kotagiri, Nilgiris (TN)</td>
+                  <td><span class="status-pill-active">Active</span></td>
+                  <td><button class="inline-pill" onclick="honeyApp.switchRole('beekeeper')">Simulate Login</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Dr. A. Sharma</strong><br><small style="color:#78716c;">KVIC-OFFICER-DIR-01</small></td>
+                  <td><span class="auth-role-tag tag-kvic_officer">KVIC OFFICER</span></td>
+                  <td>director.sharma@kvic.gov.in</td>
+                  <td>Central Testing Lab, Pune</td>
+                  <td><span class="status-pill-active">Active</span></td>
+                  <td><button class="inline-pill" onclick="honeyApp.switchRole('kvic_officer')">Simulate Login</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Ananya Sharma</strong><br><small style="color:#78716c;">HC-USER-4412</small></td>
+                  <td><span class="auth-role-tag tag-customer">CUSTOMER</span></td>
+                  <td>ananya.s@gmail.com</td>
+                  <td>Bengaluru, Karnataka</td>
+                  <td><span class="status-pill-active">Active</span></td>
+                  <td><button class="inline-pill" onclick="honeyApp.switchRole('customer')">Simulate Login</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Ghulam M. Bhat</strong><br><small style="color:#78716c;">KVIC-BEE-JK-1022</small></td>
+                  <td><span class="auth-role-tag tag-beekeeper">BEEKEEPER</span></td>
+                  <td>ghulam.bhat@kvic-honey.org</td>
+                  <td>Pampore, Pulwama (J&K)</td>
+                  <td><span class="status-pill-active">Active</span></td>
+                  <td><button class="inline-pill">Edit</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Birendra Mondal</strong><br><small style="color:#78716c;">KVIC-BEE-WB-4419</small></td>
+                  <td><span class="auth-role-tag tag-beekeeper">BEEKEEPER</span></td>
+                  <td>birendra.m@kvic-honey.org</td>
+                  <td>Gosaba, Sundarbans (WB)</td>
+                  <td><span class="status-pill-active">Active</span></td>
+                  <td><button class="inline-pill">Edit</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. 📦 Batch Management -->
+        <div class="subview-content" id="admin-batches">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: #7c3aed; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">PROVENANCE AUDIT</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">National Batch Management</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Master audit of all blockchain-minted batches.</p>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Batch ID</th>
+                  <th>Floral Origin</th>
+                  <th>Beekeeper</th>
+                  <th>Quantity</th>
+                  <th>NMR Profile</th>
+                  <th>Block Index</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>HC-KVIC-2026-NIL01</strong></td>
+                  <td>Nilgiri Multiflora</td>
+                  <td>Ramaswamy K.</td>
+                  <td>120 kg</td>
+                  <td><span style="color:#10b981;">0.8% C4 (Passed)</span></td>
+                  <td>Block #1</td>
+                  <td><button class="inline-pill" onclick="honeyApp.openQRModal('HC-KVIC-2026-NIL01')">View QR</button></td>
+                </tr>
+                <tr>
+                  <td><strong>HC-KVIC-2026-KSH02</strong></td>
+                  <td>Kashmir White Acacia</td>
+                  <td>Ghulam M. Bhat</td>
+                  <td>85 kg</td>
+                  <td><span style="color:#10b981;">0.3% C4 (Passed)</span></td>
+                  <td>Block #2</td>
+                  <td><button class="inline-pill" onclick="honeyApp.openQRModal('HC-KVIC-2026-KSH02')">View QR</button></td>
+                </tr>
+                <tr>
+                  <td><strong>HC-KVIC-2026-SUN03</strong></td>
+                  <td>Sundarbans Mangrove</td>
+                  <td>Birendra Mondal</td>
+                  <td>140 kg</td>
+                  <td><span style="color:#10b981;">1.1% C4 (Passed)</span></td>
+                  <td>Block #3</td>
+                  <td><button class="inline-pill" onclick="honeyApp.openQRModal('HC-KVIC-2026-SUN03')">View QR</button></td>
+                </tr>
+                <tr>
+                  <td><strong>HC-KVIC-2026-CRG04</strong></td>
+                  <td>Coorg Jamun & Coffee</td>
+                  <td>Meera & Bopanna</td>
+                  <td>95 kg</td>
+                  <td><span style="color:#10b981;">0.6% C4 (Passed)</span></td>
+                  <td>Block #4</td>
+                  <td><button class="inline-pill" onclick="honeyApp.openQRModal('HC-KVIC-2026-CRG04')">View QR</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. 🍯 Honey Products -->
+        <div class="subview-content" id="admin-products">
+          <div style="margin-bottom: 24px;">
+            <p class="eyebrow" style="color: #7c3aed; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">CATALOG CRUD</p>
+            <h2 style="font-size: 1.8rem; font-weight: 800;">Honey Product Catalog Management</h2>
+            <p style="font-size: 0.88rem; color: #78716c;">Manage customer marketplace listings, pricing, and certified batch linkages.</p>
+          </div>
+
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>Origin Cluster</th>
+                  <th>Price</th>
+                  <th>Size</th>
+                  <th>Linked Batch</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Nilgiri Wild Mountain Honey</strong></td>
+                  <td>Kotagiri, Tamil Nadu</td>
+                  <td>₹680</td>
+                  <td>500g</td>
+                  <td>HC-KVIC-2026-NIL01</td>
+                  <td><span class="status-pill-active">In Stock</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Kashmir White Acacia</strong></td>
+                  <td>Pampore, Pulwama</td>
+                  <td>₹820</td>
+                  <td>350g</td>
+                  <td>HC-KVIC-2026-KSH02</td>
+                  <td><span class="status-pill-active">In Stock</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Sundarbans Wild Mangrove</strong></td>
+                  <td>Gosaba, West Bengal</td>
+                  <td>₹740</td>
+                  <td>350g</td>
+                  <td>HC-KVIC-2026-SUN03</td>
+                  <td><span class="status-pill-active">In Stock</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Coorg Jamun & Coffee Blossom</strong></td>
+                  <td>Madikeri, Karnataka</td>
+                  <td>₹650</td>
+                  <td>500g</td>
+                  <td>HC-KVIC-2026-CRG04</td>
+                  <td><span class="status-pill-active">In Stock</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 5. 📡 IoT Monitoring -->
+        <div class="subview-content" id="admin-iot">
+          <div class="dark-dashboard" style="border-radius: 20px; margin-top: 10px;">
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h2><span>📡</span> National IoT Hive Grid Telemetry</h2>
+                <p class="dashboard-subtitle">5,150 Smart Boxes connected across 5 states via LoRaWAN gateways</p>
+              </div>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-label">National Telemetry Packet Rate</div><div class="metric-value">12.4/sec</div><div class="metric-status">All Gateways Healthy</div></div>
+              <div class="metric-card"><div class="metric-label">Mean National Brood Temp</div><div class="metric-value">34.3°C</div><div class="metric-status">Within Target Range</div></div>
+              <div class="metric-card"><div class="metric-label">Daily Nectar Flow Accumulation</div><div class="metric-value">+2,140 kg</div><div class="metric-status" style="color: #38bdf8;">Peak Bloom Season</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 🧠 AI Diagnostics -->
+        <div class="subview-content" id="admin-ai">
+          <div class="admin-stat-card" style="margin-top: 10px;">
+            <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">🧠 AI Inspection Model Performance (MobileNetV3 & YOLOv8)</h3>
+            <p style="font-size: 0.85rem; color: #78716c; margin-bottom: 16px;">Edge inference metrics across 1,200 rural beekeeper smartphones.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <div class="passport-tile"><strong>Varroa Mite Detection</strong><div style="font-size: 1.4rem; color:#059669; font-weight: 800;">96.4% Precision</div></div>
+              <div class="passport-tile"><strong>American Foulbrood (AFB)</strong><div style="font-size: 1.4rem; color:#059669; font-weight: 800;">94.8% Precision</div></div>
+              <div class="passport-tile"><strong>Acoustic Swarm Predictor</strong><div style="font-size: 1.4rem; color:#0284c7; font-weight: 800;">92.1% Accuracy</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. 🏛️ KVIC Management -->
+        <div class="subview-content" id="admin-kvic">
+          <div class="admin-stat-card" style="margin-top: 10px;">
+            <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">🏛️ KVIC Honey Mission Institutional Allocations</h3>
+            <p style="font-size: 0.85rem; color: #78716c; margin-bottom: 16px;">State-level equipment subsidy budget and toolkits distribution status.</p>
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr><th>State Board</th><th>Allocated Budget</th><th>Bee Boxes Distributed</th><th>Toolkits Issued</th><th>Utilization %</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Tamil Nadu KVIB</td><td>₹1.25 Cr</td><td>1,200</td><td>120 Toolkits</td><td><span class="status-pill-active">98%</span></td></tr>
+                  <tr><td>J&K Khadi Board</td><td>₹1.10 Cr</td><td>950</td><td>95 Toolkits</td><td><span class="status-pill-active">95%</span></td></tr>
+                  <tr><td>West Bengal KVIB</td><td>₹1.60 Cr</td><td>1,500</td><td>150 Toolkits</td><td><span class="status-pill-active">100%</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. ⛓️ Blockchain -->
+        <div class="subview-content" id="admin-blockchain">
+          <div class="dark-dashboard" style="border-radius: 20px; margin-top: 10px;">
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h2><span>⛓️</span> HoneyChain Decentralized Ledger Explorer</h2>
+                <p class="dashboard-subtitle">Inspect SHA-256 blocks, Merkle trees, and demonstrate tamper-resistance</p>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="button button-outline" id="tamper-btn" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: #ef4444; font-size: 0.82rem; padding: 8px 16px;">
+                  ⚠️ Simulate Data Tampering in Block #1
+                </button>
+                <button class="button button-amber" id="restore-chain-btn" style="font-size: 0.82rem; padding: 8px 16px;">
+                  🛡️ Restore Authentic Ledger
+                </button>
+              </div>
+            </div>
+
+            <!-- Chain Integrity Status Banner -->
+            <div id="chain-integrity-banner" style="margin-bottom: 24px;"></div>
+
+            <div style="background: var(--color-dark-card); border: 1px solid var(--color-dark-border); border-radius: 14px; padding: 18px 24px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 20px;">
+              💡 <strong>Why Blockchain Solves Honey Counterfeiting:</strong> Every transaction is cryptographically linked with SHA-256 hashes and Merkle proofs. If anyone modifies even 1 character (e.g. moisture from 18% to 28%), the block hash and subsequent chain links break instantly! Click the <strong>"Simulate Data Tampering"</strong> button above to see this in action.
+            </div>
+
+            <!-- Block Explorer Cards -->
+            <div class="chain-grid" id="blockchain-block-list"></div>
+          </div>
+        </div>
+
+        <!-- 9. 📈 Reports -->
+        <div class="subview-content" id="admin-reports">
+          <div class="admin-stat-card" style="margin-top: 10px;">
+            <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">📈 System Audit & Compliance Reports</h3>
+            <p style="font-size: 0.85rem; color: #78716c; margin-bottom: 16px;">Download comprehensive audit trails for regulatory submission (FSSAI, Ministry of MSME).</p>
+            <div style="display: flex; gap: 12px;">
+              <button class="button button-dark" onclick="window.print()">📄 Generate Full System PDF Audit</button>
+              <button class="button button-outline" onclick="alert('Exporting CSV Ledger Data...')">📊 Export CSV Raw Ledger</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. ⚙️ System Settings -->
+        <div class="subview-content" id="admin-settings">
+          <div class="form-card" style="margin-top: 10px;">
+            <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">⚙️ Blockchain & System Configuration</h3>
+            <p style="font-size: 0.85rem; color: #78716c; margin-bottom: 20px;">Configure consensus difficulty, PoA authority keys, and automated backup schedules.</p>
+            
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Consensus Mechanism</label>
+                <input type="text" value="Proof-of-Authority (PoA) Institutional" readonly />
+              </div>
+              <div class="form-field">
+                <label>Mining Difficulty Target</label>
+                <input type="text" value="00 (Difficulty 2 Leading Zeros)" readonly />
+              </div>
+              <div class="form-field">
+                <label>Active Authority Validator Key</label>
+                <input type="text" value="KVIC-CENTRAL-VALIDATOR-2026-PUNE" readonly />
+              </div>
+              <div class="form-field">
+                <label>Automated Ledger Backup</label>
+                <input type="text" value="Enabled (Daily Snapshot to Encrypted Storage)" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer" style="background: #1c1917; color: #fafaf9; padding: 48px 24px 32px; border-top: 1px solid #292524;">
+    <div style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; margin-bottom: 32px;">
+      <div>
+        <div class="brand" style="color: #ffffff; margin-bottom: 12px;">
+          <span class="brand-mark">H</span>
+          <span>HONEY<span>CHAIN</span></span>
+        </div>
+        <p style="font-size: 0.85rem; color: #a8a29e; line-height: 1.6;">
+          An integrated Blockchain, AI, and IoT ecosystem promoting rural beekeeping livelihoods, preventing counterfeit honey, and restoring consumer trust under KVIC Honey Mission.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="font-size: 0.9rem; font-weight: 700; color: #fef3c7; margin-bottom: 12px;">Stakeholder Portals</h4>
+        <ul style="list-style: none; font-size: 0.85rem; color: #d6d3d1; display: flex; flex-direction: column; gap: 8px;">
+          <li>• 👤 Customer (Honey Shop, QR Passport, Orders)</li>
+          <li>• 🐝 Beekeeper (Smart Boxes, IoT Telemetry, AI Lab)</li>
+          <li>• 🏢 KVIC Officer (Cluster Monitoring, NMR Lab Cert)</li>
+          <li>• 🔐 Super Admin (Users, Batches, Grid, Blockchain)</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="font-size: 0.9rem; font-weight: 700; color: #fef3c7; margin-bottom: 12px;">Regulatory Standards</h4>
+        <ul style="list-style: none; font-size: 0.85rem; color: #d6d3d1; display: flex; flex-direction: column; gap: 8px;">
+          <li>• FSSAI Food Safety Standards (Honey 2.8.4)</li>
+          <li>• AGMARK Pure Honey Certification</li>
+          <li>• NMR C4/C3 Sugar Spectrometry Analysis</li>
+          <li>• KVIC Honey Mission Cluster Guidelines</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="max-width: 1280px; margin: 0 auto; padding-top: 20px; border-top: 1px solid #292524; display: flex; justify-content: space-between; font-size: 0.78rem; color: #78716c; flex-wrap: wrap; gap: 10px;">
+      <span>© 2026 HoneyChain · Developed for KVIC Honey Mission & Rural Beekeepers</span>
+      <span>Made with care for India's Tribal Beekeepers</span>
+    </div>
+  </footer>
+
+  <!-- Shopping Bag Drawer Modal -->
+  <div class="modal-backdrop" id="cart-modal" aria-hidden="true">
+    <div class="modal-card" style="max-width: 440px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #f5f5f4; margin-bottom: 16px;">
+        <h3 style="font-size: 1.2rem;">Your Honey Bag (<span class="cart-count">0</span>)</h3>
+        <button data-close-cart style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div id="cart-items" style="max-height: 280px; overflow-y: auto;"></div>
+      <div style="padding-top: 16px; border-top: 1px solid #f5f5f4; margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; margin-bottom: 16px;">
+          <span>Subtotal</span>
+          <span id="cart-total">₹0</span>
+        </div>
+        <button class="button button-dark" style="width: 100%; justify-content: center;" onclick="alert('Demo Checkout: Orders are routed directly to KVIC rural beekeeping cooperatives!')">
+          Proceed to Verifiable Checkout <span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Display Modal -->
+  <div class="modal-backdrop" id="qr-modal" aria-hidden="true">
+    <div class="modal-card" id="qr-modal-content" style="max-width: 380px;"></div>
+  </div>
+
+  <!-- ========================================================
+       FOUR-ROLE AUTHENTICATION MODAL
+       ======================================================== -->
+  <div class="modal-backdrop" id="login-modal" aria-hidden="true">
+    <div class="modal-card auth-modal-card">
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="close-login-btn" style="background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #78716c;" aria-label="Close Login Modal">&times;</button>
+      </div>
+      <div class="auth-modal-header">
+        <span class="kvic-badge-pill">🇮🇳 KVIC 4-ROLE STAKEHOLDER ACCESS</span>
+        <h2 style="margin-top: 8px;">Select Your Stakeholder Portal</h2>
+        <p>Login as a Customer, Rural Beekeeper, KVIC Quality Officer, or System Administrator</p>
+      </div>
+
+      <!-- 4 Role Cards Grid -->
+      <div class="auth-role-grid">
+        <!-- Role 1: Customer -->
+        <div class="auth-role-card role-customer" data-auth-role="customer">
+          <div>
+            <div class="auth-role-icon">👤</div>
+            <h4>Customer</h4>
+            <div class="auth-role-subtitle" style="color: #065f46;">Honey Consumer</div>
+            <ul>
+              <li>Home & Single-Origin Honey Shop</li>
+              <li>Verify Honey & Scan QR Code</li>
+              <li>View Immutable Traceability Passport</li>
+              <li>My Orders, Bag & Profile</li>
+            </ul>
+          </div>
+          <button class="quick-login-btn quick-customer" data-login-as="customer">
+            <span>⚡ Login as Customer</span>
+          </button>
+        </div>
+
+        <!-- Role 2: Beekeeper -->
+        <div class="auth-role-card role-beekeeper" data-auth-role="beekeeper">
+          <div>
+            <div class="auth-role-icon">🐝</div>
+            <h4>Beekeeper</h4>
+            <div class="auth-role-subtitle" style="color: #92400e;">Kisan Saathi Portal</div>
+            <ul>
+              <li>Dashboard & 10 Smart Bee Boxes</li>
+              <li>IoT Hive Telemetry & Spectrogram</li>
+              <li>AI Disease & Pest Diagnostics</li>
+              <li>Yield Forecast, Harvest & Payouts</li>
+            </ul>
+          </div>
+          <button class="quick-login-btn quick-beekeeper" data-login-as="beekeeper">
+            <span>⚡ Login as Beekeeper</span>
+          </button>
+        </div>
+
+        <!-- Role 3: KVIC Officer -->
+        <div class="auth-role-card role-kvic_officer" data-auth-role="kvic_officer">
+          <div>
+            <div class="auth-role-icon">🏢</div>
+            <h4>KVIC Officer</h4>
+            <div class="auth-role-subtitle" style="color: #0369a1;">Quality & Lab Portal</div>
+            <ul>
+              <li>Cluster Oversight across 5 States</li>
+              <li>Honey Batch Approval Queue</li>
+              <li>Lab / NMR Purity Certification</li>
+              <li>Blockchain Records & Quality Alerts</li>
+            </ul>
+          </div>
+          <button class="quick-login-btn quick-kvic_officer" data-login-as="kvic_officer">
+            <span>⚡ Login as KVIC Officer</span>
+          </button>
+        </div>
+
+        <!-- Role 4: Admin -->
+        <div class="auth-role-card role-admin" data-auth-role="admin">
+          <div>
+            <div class="auth-role-icon">🔐</div>
+            <h4>Admin</h4>
+            <div class="auth-role-subtitle" style="color: #6b21a8;">Highest Permission</div>
+            <ul>
+              <li>User Management (Customers/Beekeepers/Officers)</li>
+              <li>Batch & Product Catalog Management</li>
+              <li>National IoT & AI Model Inspection</li>
+              <li>Blockchain Tamper Sandbox & Settings</li>
+            </ul>
+          </div>
+          <button class="quick-login-btn quick-admin" data-login-as="admin">
+            <span>⚡ Login as Admin</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-divider">OR SIGN IN WITH CUSTOM CREDENTIALS</div>
+
+      <!-- Custom Credentials Form -->
+      <form id="custom-login-form" class="custom-auth-form">
+        <div class="custom-auth-field">
+          <label for="custom-role-select">Select Portal Role</label>
+          <select id="custom-role-select" required>
+            <option value="customer" selected>👤 Customer (Honey Shop & Trace)</option>
+            <option value="beekeeper">🐝 Beekeeper (Kisan Portal)</option>
+            <option value="kvic_officer">🏢 KVIC Officer (Quality & Lab)</option>
+            <option value="admin">🔐 Admin (Super Administrator)</option>
+          </select>
+        </div>
+
+        <div class="custom-auth-field">
+          <label for="custom-email">Email or Member ID</label>
+          <input type="text" id="custom-email" placeholder="user@honeychain.kvic.in" required />
+        </div>
+
+        <div class="custom-auth-field">
+          <label for="custom-password">Password</label>
+          <input type="password" id="custom-password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="button button-dark" style="padding: 10px 18px; font-size: 0.85rem;">
+          Sign In <span>→</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- Application Scripts -->
+  <script src="blockchain.js"></script>
+  <script src="iot-telemetry.js"></script>
+  <script src="ai-diagnostics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

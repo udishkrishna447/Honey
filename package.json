@@ -1,0 +1,20 @@
+{
+  "name": "honeychain",
+  "version": "1.0.0",
+  "description": "Blockchain-based Honey Traceability and Smart Beekeeping Management System for KVIC Honey Mission",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "blockchain",
+    "traceability",
+    "honey",
+    "kvic",
+    "iot",
+    "smart-beekeeping",
+    "ai-diagnostics"
+  ],
+  "author": "HoneyChain Team",
+  "license": "MIT"
+}
