@@ -166,13 +166,15 @@ class HoneyChainApp {
     this.initKisanModule();
     this.initKvicModule();
     this.initBlockchainExplorer();
+    this.initOrders();
+    this.renderCustomerOrders();
     this.initCartListeners();
     this.initChatbot();
     this.renderBeekeeperBatches();
     this.renderBeekeeperQR();
 
-    // Default load active role
-    this.switchRole(this.currentUser.role);
+    // Check initial auth state: if user is logged in, enter portal; otherwise show Auth Gateway
+    this.checkInitialAuthState();
     this.verifyBatch('HC-KVIC-2026-NIL01');
     this.loadProducts();
   }
@@ -271,7 +273,7 @@ class HoneyChainApp {
   // 4-ROLE AUTHENTICATION & PORTAL SWITCHING
   // ==========================================
   initAuthModule() {
-    this.currentUser = JSON.parse(localStorage.getItem('honeychain_auth_user') || 'null') || AUTH_ROLES.customer;
+    this.currentUser = JSON.parse(localStorage.getItem('honeychain_auth_user') || 'null');
 
     // Toggle Dropdown
     const authBtn = this.$('#open-login-btn');
@@ -307,24 +309,35 @@ class HoneyChainApp {
       if (e.target.id === 'login-modal') this.closeLoginModal();
     });
 
-    // 4 Quick Login Buttons
+    // 4 Quick Login Buttons inside switch role modal
     this.$$('[data-login-as]').forEach(btn => {
       btn.addEventListener('click', () => {
         const role = btn.dataset.loginAs;
-        this.switchRole(role);
+        this.quickDemoLogin(role);
       });
     });
 
-    // Custom form login
+    // Custom form login in switch modal
     this.$('#custom-login-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const role = this.$('#custom-role-select').value;
       const email = this.$('#custom-email').value.trim();
+      const password = this.$('#custom-password')?.value || 'password123';
 
-      this.switchRole(role, {
-        email,
-        name: email.split('@')[0].replace(/[\._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      });
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          this.loginSuccess(data.user, true);
+        } else {
+          this.toast(data.error || 'Login failed');
+        }
+      })
+      .catch(err => this.toast(err.message));
     });
 
     // Cart Handlers
@@ -333,6 +346,260 @@ class HoneyChainApp {
     this.$('#cart-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'cart-modal') this.toggleCart(false);
     });
+  }
+
+  checkInitialAuthState() {
+    this.showAuthGateway();
+  }
+
+  showAuthGateway() {
+    const gateway = this.$('#auth-gateway-screen');
+    if (gateway) gateway.style.display = 'flex';
+    this.$$('.role-portal-view').forEach(p => p.style.display = 'none');
+    const headerLogout = this.$('#header-direct-logout');
+    if (headerLogout) headerLogout.style.display = 'none';
+    const navContainer = this.$('#role-nav-tabs');
+    if (navContainer) navContainer.innerHTML = '';
+    this.showGatewayView('welcome');
+  }
+
+  showGatewayView(view) {
+    const stepWelcome = this.$('#gateway-step-welcome');
+    const stepLogin = this.$('#gateway-step-login');
+    const stepSignup = this.$('#gateway-step-signup');
+
+    if (stepWelcome) stepWelcome.style.display = (view === 'welcome') ? 'block' : 'none';
+    if (stepLogin) stepLogin.style.display = (view === 'login') ? 'block' : 'none';
+    if (stepSignup) stepSignup.style.display = (view === 'signup') ? 'block' : 'none';
+
+    if (view === 'login') {
+      this.selectLoginRole('customer');
+    } else if (view === 'signup') {
+      this.selectSignupRole('customer');
+    }
+  }
+
+  async enterModuleDirect(role) {
+    return this.quickDemoLogin(role);
+  }
+
+  switchAuthMode(mode) {
+    this.showGatewayView(mode);
+  }
+
+  selectLoginRole(role) {
+    this.$$('[data-login-role]').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.loginRole === role);
+    });
+    const hiddenInput = this.$('#login-role-hidden');
+    if (hiddenInput) hiddenInput.value = role;
+
+    const label = this.$('#login-email-label');
+    const input = this.$('#login-email-input');
+
+    if (role === 'customer') {
+      if (label) label.textContent = 'Customer Name';
+      if (input) {
+        input.placeholder = 'e.g. Priya Sundaram or CUST001';
+        input.value = 'Priya Sundaram';
+      }
+    } else if (role === 'beekeeper') {
+      if (label) label.textContent = 'Beekeeper Name';
+      if (input) {
+        input.placeholder = 'e.g. Kumar or BK001 or Muthusamy';
+        input.value = 'Kumar';
+      }
+    } else if (role === 'kvic_officer') {
+      if (label) label.textContent = 'Officer Name';
+      if (input) {
+        input.placeholder = 'e.g. Dr. S. K. Narayanan or KVIC-OFFICER-01';
+        input.value = 'Dr. S. K. Narayanan';
+      }
+    } else if (role === 'admin') {
+      if (label) label.textContent = 'Admin Name';
+      if (input) {
+        input.placeholder = 'e.g. Administrator or ADMIN-001';
+        input.value = 'Administrator';
+      }
+    }
+
+    const passInput = this.$('#login-password-input');
+    if (passInput && !passInput.value) {
+      passInput.value = 'password123';
+    }
+  }
+
+  quickEnterRole(role) {
+    this.showGatewayView('login');
+    this.selectLoginRole(role);
+  }
+
+  selectSignupRole(role) {
+    const tabs = ['cust', 'bk', 'kvic', 'admin'];
+    const tabMap = {
+      customer: 'cust',
+      beekeeper: 'bk',
+      kvic_officer: 'kvic',
+      admin: 'admin'
+    };
+
+    tabs.forEach(t => {
+      this.$('#signup-tab-' + t)?.classList.toggle('active', tabMap[role] === t);
+    });
+
+    const forms = {
+      customer: this.$('#form-signup-customer'),
+      beekeeper: this.$('#form-signup-beekeeper'),
+      kvic_officer: this.$('#form-signup-kvic'),
+      admin: this.$('#form-signup-admin')
+    };
+
+    Object.keys(forms).forEach(r => {
+      if (forms[r]) forms[r].style.display = (r === role) ? 'block' : 'none';
+    });
+  }
+
+  switchCustSignupOption(opt) {
+    const btnQuick = this.$('#btn-cust-opt-quick');
+    const btnFull = this.$('#btn-cust-opt-full');
+    const deliveryWrap = this.$('#cust-delivery-details-wrap');
+    const hint = this.$('#cust-quick-hint');
+    const submitBtn = this.$('#su-cust-submit-btn');
+
+    if (opt === 'quick') {
+      btnQuick?.classList.add('active');
+      btnFull?.classList.remove('active');
+      if (deliveryWrap) deliveryWrap.style.display = 'none';
+      if (hint) {
+        hint.innerHTML = '<span>ℹ️</span> <span>Quick Sign Up: Enter just your Name &amp; Password to instantly access the store.</span>';
+      }
+      if (submitBtn) {
+        submitBtn.innerHTML = 'Register Customer with Name &amp; Password <span>&rarr;</span>';
+      }
+      const address = this.$('#su-cust-address');
+      const location = this.$('#su-cust-location');
+      const pincode = this.$('#su-cust-pincode');
+      if (address) address.required = false;
+      if (location) location.required = false;
+      if (pincode) pincode.required = false;
+    } else {
+      btnFull?.classList.add('active');
+      btnQuick?.classList.remove('active');
+      if (deliveryWrap) deliveryWrap.style.display = 'block';
+      if (hint) {
+        hint.innerHTML = '<span>📦</span> <span>Full Sign Up: Your address will be saved to your profile for automatic honey delivery.</span>';
+      }
+      if (submitBtn) {
+        submitBtn.innerHTML = 'Register Customer &amp; Go to Customer Portal <span>&rarr;</span>';
+      }
+      const address = this.$('#su-cust-address');
+      const location = this.$('#su-cust-location');
+      const pincode = this.$('#su-cust-pincode');
+      if (address) address.required = true;
+      if (location) location.required = true;
+      if (pincode) pincode.required = true;
+    }
+  }
+
+  async quickDemoLogin(role) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, email: role, password: 'password123' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Demo login failed');
+      this.loginSuccess(data.user, true);
+    } catch (err) {
+      this.toast('Login error: ' + err.message);
+    }
+  }
+
+  async handleGatewayLogin(e) {
+    e.preventDefault();
+    const role = this.$('#login-role-hidden')?.value || 'customer';
+    const email = this.$('#login-email-input')?.value?.trim();
+    const password = this.$('#login-password-input')?.value;
+
+    if (!email) {
+      this.toast('Please enter your email or ID');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid credentials');
+
+      this.loginSuccess(data.user, true);
+    } catch (err) {
+      this.toast('Login failed: ' + err.message);
+    }
+  }
+
+  async handleGatewaySignup(e, role) {
+    e.preventDefault();
+    let payload = { role };
+
+    if (role === 'customer') {
+      payload.name = this.$('#su-cust-name')?.value?.trim();
+      payload.password = this.$('#su-cust-password')?.value;
+    } else if (role === 'beekeeper') {
+      payload.name = this.$('#su-bk-name')?.value?.trim();
+      payload.password = this.$('#su-bk-password')?.value;
+    } else if (role === 'kvic_officer') {
+      payload.name = this.$('#su-kvic-name')?.value?.trim();
+      payload.password = this.$('#su-kvic-password')?.value;
+    } else if (role === 'admin') {
+      payload.name = this.$('#su-admin-name')?.value?.trim();
+      payload.password = this.$('#su-admin-password')?.value;
+    }
+
+    if (!payload.name) {
+      this.toast('Please enter your name');
+      return;
+    }
+    if (!payload.password) {
+      this.toast('Please create a password');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+      this.toast(`✓ Successfully registered ${data.user.name} to MongoDB!`);
+      this.loginSuccess(data.user, true);
+    } catch (err) {
+      this.toast('Signup failed: ' + err.message);
+    }
+  }
+
+  loginSuccess(user, showToast = true) {
+    this.currentUser = user;
+    localStorage.setItem('honeychain_auth_user', JSON.stringify(user));
+
+    const gateway = this.$('#auth-gateway-screen');
+    if (gateway) gateway.style.display = 'none';
+
+    const headerLogout = this.$('#header-direct-logout');
+    if (headerLogout) headerLogout.style.display = 'inline-flex';
+
+    this.switchRole(user.role, user);
+
+    if (showToast) {
+      this.toast(`Welcome, ${user.name}! Connected to MongoDB.`);
+    }
   }
 
   openLoginModal() {
@@ -354,16 +621,19 @@ class HoneyChainApp {
     this.closeLoginModal();
     this.updateAuthUI();
 
+    const gateway = this.$('#auth-gateway-screen');
+    if (gateway) gateway.style.display = 'none';
+
     // Hide all portal views and display active role's portal
     this.$$('.role-portal-view').forEach(p => p.style.display = 'none');
-    const activePortal = this.$('#' + this.currentUser.portalId);
+    const activePortal = this.$('#' + (this.currentUser.portalId || baseProfile.portalId));
     if (activePortal) activePortal.style.display = 'block';
 
     // Render navigation tabs for this role
     this.renderRoleNavigation();
 
     // Activate default subview for this role
-    this.switchSubView(this.currentUser.defaultSubView);
+    this.switchSubView(this.currentUser.defaultSubView || baseProfile.defaultSubView);
 
     // Cart button visibility (Customer & Admin only)
     const cartBtn = this.$('#header-cart-btn');
@@ -371,12 +641,16 @@ class HoneyChainApp {
       cartBtn.style.display = (this.currentUser.role === 'customer' || this.currentUser.role === 'admin') ? 'flex' : 'none';
     }
 
-    this.toast(`Logged in as ${this.currentUser.name} (${this.currentUser.roleTitle})`);
+    if (!customInfo) {
+      this.toast(`Logged in as ${this.currentUser.name} (${this.currentUser.roleTitle})`);
+    }
   }
 
   logout() {
-    this.switchRole('customer');
-    this.toast('Signed out to Guest Customer session.');
+    localStorage.removeItem('honeychain_auth_user');
+    this.currentUser = null;
+    this.showAuthGateway();
+    this.toast('Signed out successfully.');
   }
 
   renderRoleNavigation() {
@@ -430,6 +704,9 @@ class HoneyChainApp {
     }
     if (subviewId === 'cust-cart') {
       this.renderCart();
+    }
+    if (subviewId === 'cust-orders') {
+      this.renderCustomerOrders();
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1190,28 +1467,247 @@ class HoneyChainApp {
     }
   }
 
+  initOrders() {
+    const saved = localStorage.getItem('honeychain_customer_orders');
+    if (saved) {
+      try {
+        this.orders = JSON.parse(saved);
+      } catch (e) {
+        this.orders = [];
+      }
+    }
+    if (!this.orders || !this.orders.length) {
+      this.orders = [
+        {
+          orderId: 'HC-2026-8812',
+          paymentId: 'pay_NILGIRI_8812',
+          razorpayOrderId: 'order_NIL8812',
+          date: '02 Sep 2026',
+          timestamp: '2026-09-02T10:30:00.000Z',
+          status: 'Delivered',
+          statusClass: 'badge-delivered',
+          statusNote: 'Delivered · Shipped via BlueDart Express',
+          totalAmount: 680,
+          customerName: 'Ananya Sharma',
+          customerEmail: 'ananya@honeychain.kvic.in',
+          items: [
+            {
+              id: 1,
+              name: 'Nilgiri Wild Forest Multiflora',
+              size: '500g',
+              price: 680,
+              quantity: 1,
+              subtotal: 680,
+              batchId: 'HC-KVIC-2026-NIL01',
+              image: 'nilgiris-honey.jpg'
+            }
+          ]
+        },
+        {
+          orderId: 'HC-2026-9041',
+          paymentId: 'pay_KASHMIR_9041',
+          razorpayOrderId: 'order_KSH9041',
+          date: '10 Sep 2026',
+          timestamp: '2026-09-10T14:15:00.000Z',
+          status: 'In Transit',
+          statusClass: 'badge-in_transit',
+          statusNote: 'Dispatched from Srinagar Khadi Hub · Expected 14 Sep 2026',
+          totalAmount: 820,
+          customerName: 'Ananya Sharma',
+          customerEmail: 'ananya@honeychain.kvic.in',
+          items: [
+            {
+              id: 2,
+              name: 'Kashmir White Acacia',
+              size: '350g',
+              price: 820,
+              quantity: 1,
+              subtotal: 820,
+              batchId: 'HC-KVIC-2026-KSH02',
+              image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=700&q=80'
+            }
+          ]
+        }
+      ];
+      this.saveOrders();
+    }
+  }
+
+  saveOrders() {
+    try {
+      localStorage.setItem('honeychain_customer_orders', JSON.stringify(this.orders));
+    } catch (e) {
+      console.warn('Could not save orders to localStorage', e);
+    }
+  }
+
   completeOrder(payment) {
+    // 1. Capture ordered items snapshot before clearing cart
+    const orderedItems = this.cart.map(item => {
+      const p = (this.products || []).find(x => x.id === item.id) || {};
+      return {
+        id: item.id,
+        name: p.name || 'Pure Indian Honey',
+        size: p.size || '500g',
+        price: p.price || 0,
+        quantity: item.quantity,
+        subtotal: (p.price || 0) * item.quantity,
+        batchId: p.batchId || 'HC-KVIC-2026-NIL01',
+        image: p.image || 'nilgiris-honey.jpg'
+      };
+    });
+
+    const totalAmount = orderedItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const now = new Date();
+    const orderId = `HC-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newOrder = {
+      orderId,
+      paymentId: payment.razorpay_payment_id || `pay_${Date.now()}`,
+      razorpayOrderId: payment.razorpay_order_id || '',
+      date: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      timestamp: now.toISOString(),
+      status: 'Confirmed',
+      statusClass: 'badge-confirmed',
+      statusNote: 'Payment Verified · Direct allocation to KVIC tribal cooperative',
+      totalAmount,
+      customerName: this.currentUser?.name || 'Customer',
+      customerEmail: this.currentUser?.email || 'customer@honeychain.kvic.in',
+      customerPhone: this.currentUser?.phone || '+91 98401 23456',
+      shippingAddress: this.currentUser?.deliveryAddress
+        ? `${this.currentUser.deliveryAddress}, ${this.currentUser.location || ''} - ${this.currentUser.pincode || ''}`
+        : (this.currentUser?.location || 'Registered Delivery Address'),
+      items: orderedItems
+    };
+
+    // 2. Prepend order to user's order history
+    if (!this.orders) this.orders = [];
+    this.orders.unshift(newOrder);
+    this.saveOrders();
+
+    // 3. Clear cart and reset cart UI
     this.cart = [];
     this.saveCart();
     this.renderCart();
     this.toggleCart(false);
-    this.switchSubView('cust-cart');
 
-    const successHtml = `
-      <div style="text-align: center; padding: 42px 20px;">
-        <div style="font-size: 3rem; margin-bottom: 12px;">✓</div>
-        <h3 style="font-size: 1.6rem; margin-bottom: 8px;">Order placed successfully</h3>
-        <p style="color: #57534e; margin-bottom: 12px;">Your verified honey is on its way.</p>
-        <small style="color: #78716c;">Payment ID: ${payment.razorpay_payment_id}</small>
-      </div>
-    `;
-    const pageItems = this.$('#cart-page-items');
-    const drawerItems = this.$('#cart-items');
-    if (pageItems) pageItems.innerHTML = successHtml;
-    if (drawerItems) drawerItems.innerHTML = successHtml;
-    this.$('#cart-page-total').textContent = '';
-    this.$('#cart-total').textContent = '';
-    this.toast('Payment successful');
+    // 4. Update the My Orders list and switch directly to Customer "My Orders" subview
+    this.renderCustomerOrders();
+    this.switchSubView('cust-orders');
+
+    // 5. Success notification
+    this.toast(`🎉 Payment successful! Order #${orderId} added to My Orders.`);
+  }
+
+  renderCustomerOrders() {
+    const list = this.$('#cust-orders-list');
+    if (!list) return;
+
+    if (!this.orders || !this.orders.length) {
+      list.innerHTML = `
+        <div style="text-align: center; padding: 48px 16px; color: #78716c; background: #fafaf9; border-radius: 16px; border: 1px dashed #e7e5e4;">
+          <div style="font-size: 2.4rem; margin-bottom: 8px;">📦</div>
+          <p style="font-weight: 800; color: #1c1917; font-size: 1.1rem; margin-bottom: 4px;">No Orders Yet</p>
+          <p style="font-size: 0.85rem; color: #78716c; margin-bottom: 18px;">Orders placed in the Honey Shop will appear here with cryptographic batch tracking.</p>
+          <button class="button button-amber" onclick="honeyApp.switchSubView('cust-shop')">Browse Honey Shop ↗</button>
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = this.orders.map(order => {
+      const statusClass = order.statusClass || (order.status === 'Delivered' ? 'badge-delivered' : order.status === 'In Transit' ? 'badge-in_transit' : 'badge-confirmed');
+      const firstBatch = order.items?.[0]?.batchId || 'HC-KVIC-2026-NIL01';
+
+      const itemsListHtml = (order.items || []).map(it => `
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #44403c; padding: 4px 0;">
+          <div>
+            <strong>${it.quantity}x</strong> ${it.name} (${it.size}) · 
+            <span style="font-family: var(--font-mono); color: var(--color-amber-800); font-weight: 600;">${it.batchId}</span>
+          </div>
+          <div style="font-weight: 700; color: #1c1917;">₹${(it.subtotal || it.price * it.quantity || 0).toLocaleString('en-IN')}</div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="order-card" style="margin-bottom: 18px;">
+          <div class="order-info" style="flex: 1;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <strong style="font-size: 1.05rem;">Order #${order.orderId}</strong>
+              <span class="order-badge ${statusClass}">● ${order.status}</span>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--color-amber-800); margin-left: auto;">Total: ₹${(order.totalAmount || 0).toLocaleString('en-IN')}</span>
+            </div>
+            <div style="margin: 8px 0; padding: 8px 12px; background: #fafaf9; border-radius: 8px; border: 1px solid #f5f5f4;">
+              ${itemsListHtml}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: #78716c;">
+              <span>${order.statusNote || 'Order verified via Razorpay'} · ${order.date}</span>
+              ${order.paymentId ? `<span>Payment Ref: <code style="font-family: var(--font-mono); color: #0284c7;">${order.paymentId}</code></span>` : ''}
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-direction: column; justify-content: center; min-width: 170px;">
+            <button class="inline-pill" onclick="honeyApp.verifyBatch('${firstBatch}'); honeyApp.switchSubView('cust-trace');" style="text-align: center; justify-content: center;">
+              View Passport ↗
+            </button>
+            <button class="inline-pill" onclick="honeyApp.printOrderReceipt('${order.orderId}')" style="text-align: center; justify-content: center;">
+              📄 Invoice & Cert
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  printOrderReceipt(orderId) {
+    const order = (this.orders || []).find(o => o.orderId === orderId);
+    if (!order) {
+      window.print();
+      return;
+    }
+    const modal = this.$('#qr-modal');
+    const container = this.$('#qr-modal-content');
+    if (modal && container) {
+      container.innerHTML = `
+        <div style="text-align: left; padding: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f59e0b; padding-bottom: 12px; margin-bottom: 14px;">
+            <div>
+              <span class="kvic-badge-pill" style="font-size: 0.65rem;">🇮🇳 KVIC HONEY MISSION</span>
+              <h3 style="margin-top: 6px; font-size: 1.2rem;">Authenticity Certificate & Invoice</h3>
+            </div>
+            <strong style="font-family: var(--font-mono); color: var(--color-amber-800);">${order.orderId}</strong>
+          </div>
+          <div style="font-size: 0.82rem; color: #57534e; margin-bottom: 12px; line-height: 1.5;">
+            <div><strong>Customer:</strong> ${order.customerName} (${order.customerEmail})</div>
+            <div><strong>Payment Ref:</strong> <code style="font-family: var(--font-mono); color: #0284c7;">${order.paymentId}</code></div>
+            <div><strong>Date:</strong> ${order.date}</div>
+            <div><strong>Status:</strong> <span class="order-badge ${order.statusClass || 'badge-confirmed'}">● ${order.status}</span></div>
+          </div>
+          <div style="border: 1px solid #e7e5e4; border-radius: 8px; padding: 10px; margin-bottom: 14px; background: #fafaf9;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #78716c; margin-bottom: 6px;">PURCHASED BATCHES</div>
+            ${(order.items || []).map(it => `
+              <div style="display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px dashed #e7e5e4;">
+                <span><strong>${it.quantity}x</strong> ${it.name} (${it.size})<br><small style="color: #78716c;">Batch: ${it.batchId}</small></span>
+                <span style="font-weight: 700;">₹${(it.subtotal || it.price * it.quantity || 0).toLocaleString('en-IN')}</span>
+              </div>
+            `).join('')}
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; margin-top: 8px;">
+              <span>Total Paid</span>
+              <span style="color: var(--color-amber-800);">₹${(order.totalAmount || 0).toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 0.75rem; color: #78716c; margin-bottom: 14px;">
+            🛡️ Cryptographically signed & verified on HoneyChain Distributed Ledger.
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="button button-outline" style="padding: 8px 14px; font-size: 0.82rem;" onclick="window.print()">🖨️ Print</button>
+            <button class="button button-dark" style="padding: 8px 14px; font-size: 0.82rem;" onclick="document.querySelector('#qr-modal').classList.remove('open')">Close</button>
+          </div>
+        </div>
+      `;
+      modal.classList.add('open');
+      return;
+    }
+    window.print();
   }
 
   renderCart() {
@@ -1364,6 +1860,7 @@ class HoneyChainApp {
       </div>
     `;
   }
+
 }
 
 // Initialize on DOM load

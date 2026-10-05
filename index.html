@@ -13,6 +13,253 @@
 </head>
 <body>
 
+  <!-- ========================================================
+       HONEYCHAIN AUTHENTICATION GATEWAY (LOGIN / SIGN UP)
+       Gatekeeper displayed on open until user is authenticated
+       ======================================================== -->
+  <div class="auth-gateway-overlay" id="auth-gateway-screen">
+    <div class="auth-gateway-card">
+      
+      <!-- ==============================================
+           STEP 1: WELCOME SCREEN (LOGIN / SIGN UP FIRST)
+           ============================================== -->
+      <div class="gateway-step" id="gateway-step-welcome">
+        <div class="auth-gateway-header">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+            <span class="brand-mark" style="width: 44px; height: 44px; font-size: 1.35rem;">H</span>
+            <span style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: #1c1917;">HONEY<span style="color: #d97706;">CHAIN</span></span>
+          </div>
+          <div style="display: flex; justify-content: center; gap: 8px; margin: 8px 0; flex-wrap: wrap;">
+            <span class="kvic-badge-pill">🇮🇳 KVIC HONEY MISSION</span>
+            <span class="kvic-badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #047857; border-color: rgba(16, 185, 129, 0.3);">🛡️ SHA-256 SECURED</span>
+            <span class="kvic-badge-pill" style="background: rgba(59, 130, 246, 0.12); color: #1d4ed8; border-color: rgba(59, 130, 246, 0.3);">🍃 100% PURE NMR</span>
+          </div>
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin: 6px 0 4px;">Welcome to HoneyChain</h2>
+          <p style="font-size: 0.85rem; color: #64748b; margin: 0 auto; max-width: 460px;">
+            Please choose an option below to enter or register across the 4 HoneyChain stakeholder modules:
+          </p>
+        </div>
+
+        <!-- 2 Primary Decision Cards: Login vs Sign Up -->
+        <div class="gateway-welcome-choice-grid">
+          <!-- 1. LOGIN OPTION -->
+          <div class="gateway-choice-card choice-card-login" onclick="honeyApp.showGatewayView('login')">
+            <div class="choice-icon">🔑</div>
+            <div class="choice-info">
+              <h3>Sign In / Login</h3>
+              <p>Already have an account? Select Customer, Beekeeper, KVIC Officer, or Admin to enter your module.</p>
+            </div>
+            <button type="button" class="button button-amber choice-action-btn">
+              <span>Sign In to Module</span> <span>&rarr;</span>
+            </button>
+          </div>
+
+          <!-- 2. SIGN UP OPTION -->
+          <div class="gateway-choice-card choice-card-signup" onclick="honeyApp.showGatewayView('signup')">
+            <div class="choice-icon">📝</div>
+            <div class="choice-info">
+              <h3>Create Account / Sign Up</h3>
+              <p>New stakeholder? Register a new profile in MongoDB under any of the 4 stakeholder modules.</p>
+            </div>
+            <button type="button" class="button button-dark choice-action-btn">
+              <span>Register (4 Modules)</span> <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+            Or Quick Access by Role:
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" class="gateway-back-btn" onclick="honeyApp.quickEnterRole('customer')">
+              <span>👤</span> Customer
+            </button>
+            <button type="button" class="gateway-back-btn" onclick="honeyApp.quickEnterRole('beekeeper')">
+              <span>🐝</span> Beekeeper
+            </button>
+            <button type="button" class="gateway-back-btn" onclick="honeyApp.quickEnterRole('kvic_officer')">
+              <span>🏢</span> KVIC Officer
+            </button>
+            <button type="button" class="gateway-back-btn" onclick="honeyApp.quickEnterRole('admin')">
+              <span>🔐</span> Admin Officer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           STEP 2: LOGIN VIEW (NAME & PASSWORD)
+           ============================================== -->
+      <div class="gateway-step" id="gateway-step-login" style="display: none;">
+        <div class="gateway-step-topbar">
+          <button type="button" class="gateway-back-btn" onclick="honeyApp.showGatewayView('welcome')">
+            <span>&larr;</span> Back
+          </button>
+          <div class="gateway-step-badge">🔑 Sign In</div>
+        </div>
+
+        <div class="auth-gateway-header" style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin: 2px 0;">Sign In to HoneyChain</h2>
+          <p style="font-size: 0.85rem; color: #64748b; margin: 0 auto; max-width: 440px;">
+            Select your module and enter your Name and Password to access your portal:
+          </p>
+        </div>
+
+        <form id="gateway-login-form" onsubmit="honeyApp.handleGatewayLogin(event)" style="max-width: 460px; margin: 0 auto; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.04);">
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Select Role</label>
+            <div class="auth-role-select-grid">
+              <button type="button" class="auth-role-chip active" data-login-role="customer" onclick="honeyApp.selectLoginRole('customer')">
+                <span>👤</span> Customer
+              </button>
+              <button type="button" class="auth-role-chip" data-login-role="beekeeper" onclick="honeyApp.selectLoginRole('beekeeper')">
+                <span>🐝</span> Beekeeper
+              </button>
+              <button type="button" class="auth-role-chip" data-login-role="kvic_officer" onclick="honeyApp.selectLoginRole('kvic_officer')">
+                <span>🏢</span> KVIC Officer
+              </button>
+              <button type="button" class="auth-role-chip" data-login-role="admin" onclick="honeyApp.selectLoginRole('admin')">
+                <span>🔐</span> Admin
+              </button>
+            </div>
+            <input type="hidden" id="login-role-hidden" value="customer" />
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;" id="login-email-label">
+              Customer Name
+            </label>
+            <input type="text" id="login-email-input" required placeholder="e.g. Priya Sundaram" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+          </div>
+
+          <div style="margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Password</label>
+            </div>
+            <input type="password" id="login-password-input" value="password123" required placeholder="Enter password" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+          </div>
+
+          <div style="margin: -6px 0 16px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.74rem; color: #64748b; line-height: 1.35;">
+            💡 <strong>Quick Demo Password:</strong> <code>password123</code> is pre-filled. Enter your Name or click any module above.
+          </div>
+
+          <button type="submit" class="button button-amber" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.92rem; font-weight: 800;">
+            Sign In <span>&rarr;</span>
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 18px; font-size: 0.84rem; color: #64748b;">
+          Need to create a new profile? <a href="javascript:void(0)" onclick="honeyApp.showGatewayView('signup')" style="color: #d97706; font-weight: 700; text-decoration: none;">Go to Sign Up (Name &amp; Password) &rarr;</a>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           STEP 3: SIGN UP VIEW (ONLY NAME & PASSWORD)
+           ============================================== -->
+      <div class="gateway-step" id="gateway-step-signup" style="display: none;">
+        <div class="gateway-step-topbar">
+          <button type="button" class="gateway-back-btn" onclick="honeyApp.showGatewayView('welcome')">
+            <span>&larr;</span> Back
+          </button>
+          <div class="gateway-step-badge" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">📝 Registration (MongoDB)</div>
+        </div>
+
+        <div class="auth-gateway-header" style="margin-bottom: 16px;">
+          <h2 style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin: 2px 0;">Sign Up with Name &amp; Password</h2>
+          <p style="font-size: 0.85rem; color: #64748b; margin: 0 auto; max-width: 460px;">
+            Select your module and enter your Name and Password. Your account is saved directly into MongoDB:
+          </p>
+        </div>
+
+        <!-- 4 Module Selection Tabs -->
+        <div style="margin-bottom: 16px;">
+          <div class="auth-role-select-grid">
+            <button type="button" class="auth-role-chip active" id="signup-tab-cust" onclick="honeyApp.selectSignupRole('customer')">
+              <span>👤</span> 1. Customer
+            </button>
+            <button type="button" class="auth-role-chip" id="signup-tab-bk" onclick="honeyApp.selectSignupRole('beekeeper')">
+              <span>🐝</span> 2. Beekeeper
+            </button>
+            <button type="button" class="auth-role-chip" id="signup-tab-kvic" onclick="honeyApp.selectSignupRole('kvic_officer')">
+              <span>🏢</span> 3. KVIC Officer
+            </button>
+            <button type="button" class="auth-role-chip" id="signup-tab-admin" onclick="honeyApp.selectSignupRole('admin')">
+              <span>🔐</span> 4. Admin Officer
+            </button>
+          </div>
+        </div>
+
+        <div style="max-width: 460px; margin: 0 auto; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px -2px rgba(0,0,0,0.04);">
+          <!-- 1. Customer Sign Up Form -->
+          <form id="form-signup-customer" onsubmit="honeyApp.handleGatewaySignup(event, 'customer')">
+            <div style="margin-bottom: 14px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Full Name / Username *</label>
+              <input type="text" id="su-cust-name" required placeholder="e.g. Priya Sundaram" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <div style="margin-bottom: 18px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Password *</label>
+              <input type="password" id="su-cust-password" required placeholder="Create password" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <button type="submit" class="button button-amber" style="width: 100%; justify-content: center; padding: 12px; font-weight: 800; font-size: 0.92rem;">
+              Sign Up as Customer <span>&rarr;</span>
+            </button>
+          </form>
+
+          <!-- 2. Beekeeper Sign Up Form -->
+          <form id="form-signup-beekeeper" style="display: none;" onsubmit="honeyApp.handleGatewaySignup(event, 'beekeeper')">
+            <div style="margin-bottom: 14px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Beekeeper Name *</label>
+              <input type="text" id="su-bk-name" required placeholder="e.g. Muthusamy" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <div style="margin-bottom: 18px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Password *</label>
+              <input type="password" id="su-bk-password" required placeholder="Create password" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <button type="submit" class="button button-amber" style="width: 100%; justify-content: center; padding: 12px; font-weight: 800; font-size: 0.92rem;">
+              Sign Up as Beekeeper <span>&rarr;</span>
+            </button>
+          </form>
+
+          <!-- 3. KVIC Officer Sign Up Form -->
+          <form id="form-signup-kvic" style="display: none;" onsubmit="honeyApp.handleGatewaySignup(event, 'kvic_officer')">
+            <div style="margin-bottom: 14px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Officer Name *</label>
+              <input type="text" id="su-kvic-name" required placeholder="e.g. Dr. K. Venkatraman" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <div style="margin-bottom: 18px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Password *</label>
+              <input type="password" id="su-kvic-password" required placeholder="Create password" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <button type="submit" class="button button-amber" style="width: 100%; justify-content: center; padding: 12px; font-weight: 800; font-size: 0.92rem;">
+              Sign Up as KVIC Officer <span>&rarr;</span>
+            </button>
+          </form>
+
+          <!-- 4. Admin Officer Sign Up Form -->
+          <form id="form-signup-admin" style="display: none;" onsubmit="honeyApp.handleGatewaySignup(event, 'admin')">
+            <div style="margin-bottom: 14px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Admin Name *</label>
+              <input type="text" id="su-admin-name" required placeholder="e.g. Suresh Kumar" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <div style="margin-bottom: 18px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Password *</label>
+              <input type="password" id="su-admin-password" required placeholder="Create password" style="width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 0.9rem;" />
+            </div>
+            <button type="submit" class="button button-amber" style="width: 100%; justify-content: center; padding: 12px; font-weight: 800; font-size: 0.92rem;">
+              Sign Up as Admin <span>&rarr;</span>
+            </button>
+          </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 18px; font-size: 0.84rem; color: #64748b;">
+          Already have an account? <a href="javascript:void(0)" onclick="honeyApp.showGatewayView('login')" style="color: #d97706; font-weight: 700; text-decoration: none;">Go to Sign In &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Announcement Bar -->
   <div class="announcement">
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -60,6 +307,12 @@
           </div>
         </div>
       </div>
+
+      
+      <!-- Direct Logout Button -->
+      <button class="header-logout-pill" id="header-direct-logout" onclick="honeyApp.logout()" style="display: none;" title="Sign Out & Return to Login / Sign Up Gateway">
+        <span>🚪</span> Log Out
+      </button>
 
       <!-- Shopping Bag Button (shown for Customer & Admin) -->
       <button class="cart-button" id="header-cart-btn" data-open-cart>
@@ -207,33 +460,8 @@
             <p style="font-size: 0.88rem; color: #78716c;">Track shipments and download cryptographic certificates of authenticity for your jars.</p>
           </div>
 
-          <div class="order-card">
-            <div class="order-info">
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <strong>Order #HC-2026-8812</strong>
-                <span class="order-badge badge-delivered">● Delivered</span>
-              </div>
-              <p style="font-size: 0.85rem; color: #57534e; margin-top: 4px;">1x Nilgiri Wild Forest Multiflora (350g) · Batch: <strong>HC-KVIC-2026-NIL01</strong></p>
-              <small style="color: #78716c;">Delivered on 02 Sep 2026 · Shipped via BlueDart Express</small>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button class="inline-pill" onclick="honeyApp.verifyBatch('HC-KVIC-2026-NIL01'); honeyApp.switchSubView('cust-trace');">View Passport ↗</button>
-              <button class="inline-pill" onclick="window.print()">📄 Invoice & Certificate</button>
-            </div>
-          </div>
-
-          <div class="order-card">
-            <div class="order-info">
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <strong>Order #HC-2026-9041</strong>
-                <span class="order-badge badge-in_transit">● In Transit</span>
-              </div>
-              <p style="font-size: 0.85rem; color: #57534e; margin-top: 4px;">1x Kashmir White Acacia (350g) · Batch: <strong>HC-KVIC-2026-KSH02</strong></p>
-              <small style="color: #78716c;">Dispatched from Srinagar Khadi Hub · Expected 14 Sep 2026</small>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button class="inline-pill" onclick="honeyApp.verifyBatch('HC-KVIC-2026-KSH02'); honeyApp.switchSubView('cust-trace');">View Passport ↗</button>
-            </div>
+          <div id="cust-orders-list">
+            <!-- Dynamically populated by renderCustomerOrders() -->
           </div>
         </section>
       </div>
@@ -1628,7 +1856,6 @@
       </form>
     </div>
   </div>
-
   <!-- Toast Notification -->
   <div class="toast" id="toast" role="status"></div>
 
@@ -1664,6 +1891,6 @@
   <script src="iot-telemetry.js"></script>
   <script src="ai-diagnostics.js"></script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2.1"></script>
 </body>
 </html>

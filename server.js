@@ -8,15 +8,42 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+const {
+  initializeDatabase,
+  getProducts,
+  getProductsByIds,
+  getDashboardStats,
+  getBeekeepers,
+  addBeekeeper,
+  getCustomers,
+  addCustomer,
+  getKvicOfficers,
+  addKvicOfficer,
+  getAdminOfficers,
+  addAdminOfficer,
+  getHoneyBatches,
+  addHoneyBatch,
+  getFullDashboardData,
+  registerUser,
+  authenticateUser,
+  getMe
+} = require('./database');
 const { HoneyBlockchain } = require('./blockchain');
-const { initializeDatabase, getProducts, getProductsByIds } = require('./database');
 
 const PORT = process.env.PORT || 3000;
 const blockchain = new HoneyBlockchain();
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TeKms0E782V0u2';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'ZHUA7f53tVs9TxAnyKXYcgnD';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
+
+function getGeminiApiKey() {
+  if (!process.env.GEMINI_API_KEY) {
+    require('dotenv').config({ path: path.join(__dirname, '.env') });
+  }
+  return process.env.GEMINI_API_KEY || '';
+}
+
+const GEMINI_API_KEY = getGeminiApiKey();
 let geminiModels = [];
 let geminiModelIndex = 0;
 
@@ -70,11 +97,12 @@ function requestJson(options, payload = null) {
 
 async function getGeminiModel() {
   if (geminiModels.length) return geminiModels[geminiModelIndex].name;
-  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not configured in .env');
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured in .env');
 
   const result = await requestJson({
     hostname: 'generativelanguage.googleapis.com',
-    path: `/v1beta/models?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+    path: `/v1beta/models?key=${encodeURIComponent(apiKey)}`,
     method: 'GET'
   });
   const availableModels = (result.models || []).filter(model =>
@@ -84,15 +112,13 @@ async function getGeminiModel() {
     'gemini-flash-lite-latest',
     'gemini-3.5-flash',
     'gemini-3.5-flash-lite',
+    'gemini-flash-latest',
     'gemini-3.6-flash',
     'gemini-3.7-flash',
     'gemini-3.8-flash',
     'gemini-3.1-flash-lite',
-    'gemini-flash-lite-latest',
-    'gemini-flash-latest',
     'gemini-3.1-flash',
     'gemini-3.0-flash',
-    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-1.5-flash'
   ];
@@ -106,6 +132,9 @@ async function getGeminiModel() {
 }
 
 async function answerWebsiteQuestion(message, history = []) {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured in .env');
+
   const model = await getGeminiModel();
   const contents = history
     .filter(item => ['user', 'model'].includes(item.role) && typeof item.text === 'string')
@@ -115,11 +144,11 @@ async function answerWebsiteQuestion(message, history = []) {
 
   let lastError;
   for (let attempt = 0; attempt < 3; attempt++) {
-    const model = await getGeminiModel();
+    const activeModel = await getGeminiModel();
     try {
       const result = await requestJson({
         hostname: 'generativelanguage.googleapis.com',
-        path: `/v1beta/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+        path: `/v1beta/${activeModel}:generateContent?key=${encodeURIComponent(apiKey)}`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       }, {
@@ -133,7 +162,7 @@ async function answerWebsiteQuestion(message, history = []) {
         .join('')
         .trim();
       if (!text) throw new Error('Gemini returned an empty response');
-      return { text, model };
+      return { text, model: activeModel };
     } catch (error) {
       lastError = error;
       geminiModelIndex++;
@@ -271,6 +300,173 @@ const server = http.createServer((req, res) => {
       swarmRiskScore: 12
     }));
     return;
+  }
+
+  // REAL-TIME DATABASE DASHBOARD ENDPOINTS
+  if (pathname === '/api/dashboard/all' && req.method === 'GET') {
+    getFullDashboardData().then(data => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(data));
+    }).catch(error => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/dashboard/stats' && req.method === 'GET') {
+    getDashboardStats().then(stats => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(stats));
+    }).catch(error => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/dashboard/beekeepers') {
+    if (req.method === 'GET') {
+      getBeekeepers().then(data => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(data));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'POST') {
+      readJsonBody(req).then(body => addBeekeeper(body)).then(rec => {
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, beekeeper: rec }));
+      }).catch(error => {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+  }
+
+  if (pathname === '/api/dashboard/customers') {
+    if (req.method === 'GET') {
+      getCustomers(150).then(data => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(data));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'POST') {
+      readJsonBody(req).then(body => addCustomer(body)).then(rec => {
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, customer: rec }));
+      }).catch(error => {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+  }
+
+  if (pathname === '/api/dashboard/officers' && req.method === 'GET') {
+    Promise.all([getKvicOfficers(), getAdminOfficers()]).then(([kvic, admin]) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ kvicOfficers: kvic, adminOfficers: admin }));
+    }).catch(error => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/dashboard/kvic' && req.method === 'POST') {
+    readJsonBody(req).then(body => addKvicOfficer(body)).then(rec => {
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, officer: rec }));
+    }).catch(error => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/dashboard/admins' && req.method === 'POST') {
+    readJsonBody(req).then(body => addAdminOfficer(body)).then(rec => {
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, admin: rec }));
+    }).catch(error => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  // AUTHENTICATION API ROUTES (MongoDB Backed)
+  if (pathname === '/api/auth/signup' && req.method === 'POST') {
+    readJsonBody(req).then(body => {
+      const { role, ...userData } = body;
+      return registerUser(role, userData);
+    }).then(user => {
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, user }));
+    }).catch(error => {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    readJsonBody(req).then(body => {
+      const { role, email, password } = body;
+      return authenticateUser(role, email, password);
+    }).then(user => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, user }));
+    }).catch(error => {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/auth/me' && req.method === 'GET') {
+    const role = parsedUrl.searchParams.get('role');
+    const id = parsedUrl.searchParams.get('id');
+    getMe(role, id).then(user => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, user }));
+    }).catch(error => {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
+  if (pathname === '/api/dashboard/batches') {
+    if (req.method === 'GET') {
+      getHoneyBatches().then(data => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(data));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'POST') {
+      readJsonBody(req).then(body => addHoneyBatch(body)).then(rec => {
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, batch: rec }));
+      }).catch(error => {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
   }
 
   if (pathname === '/api/products' && req.method === 'GET') {
