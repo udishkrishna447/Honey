@@ -10,13 +10,13 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const { HoneyBlockchain } = require('./blockchain');
+const { initializeDatabase, getProducts, getProductsByIds } = require('./database');
 
 const PORT = process.env.PORT || 3000;
 const blockchain = new HoneyBlockchain();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TeKms0E782V0u2';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'ZHUA7f53tVs9TxAnyKXYcgnD';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const HONEY_PRICES = { 1: 680, 2: 820, 3: 740, 4: 650 };
 let geminiModels = [];
 let geminiModelIndex = 0;
 
@@ -273,6 +273,17 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (pathname === '/api/products' && req.method === 'GET') {
+    getProducts().then(products => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(products));
+    }).catch(error => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: error.message }));
+    });
+    return;
+  }
+
   if (pathname === '/api/chat' && req.method === 'POST') {
     readJsonBody(req).then(async ({ message, history }) => {
       if (typeof message !== 'string' || !message.trim()) throw new Error('Please enter a question');
@@ -296,8 +307,12 @@ const server = http.createServer((req, res) => {
 
     readJsonBody(req).then(async ({ items }) => {
       if (!Array.isArray(items) || !items.length) throw new Error('Your bag is empty');
+      const productIds = [...new Set(items.map(item => Number(item.id)))];
+      const products = await getProductsByIds(productIds);
+      if (products.length !== productIds.length) throw new Error('Invalid item in bag');
+      const prices = new Map(products.map(product => [product.id, product.price]));
       const amount = items.reduce((total, item) => {
-        const price = HONEY_PRICES[item.id];
+        const price = prices.get(Number(item.id));
         const quantity = Number(item.quantity);
         if (!price || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
           throw new Error('Invalid item in bag');
@@ -335,12 +350,18 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🍯 HoneyChain Server running at http://localhost:${PORT}`);
-  console.log(`📡 API Endpoints:`);
-  console.log(`   - Blockchain:  http://localhost:${PORT}/api/blockchain`);
-  console.log(`   - Batches:     http://localhost:${PORT}/api/batches`);
-  console.log(`   - Telemetry:   http://localhost:${PORT}/api/telemetry`);
-  console.log(`====================================================`);
+initializeDatabase().then(() => {
+  server.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`🍯 HoneyChain Server running at http://localhost:${PORT}`);
+    console.log(`📡 API Endpoints:`);
+    console.log(`   - Products:    http://localhost:${PORT}/api/products`);
+    console.log(`   - Blockchain:  http://localhost:${PORT}/api/blockchain`);
+    console.log(`   - Batches:     http://localhost:${PORT}/api/batches`);
+    console.log(`   - Telemetry:   http://localhost:${PORT}/api/telemetry`);
+    console.log(`====================================================`);
+  });
+}).catch(error => {
+  console.error(`MongoDB connection failed: ${error.message}`);
+  process.exitCode = 1;
 });

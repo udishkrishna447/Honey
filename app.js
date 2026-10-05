@@ -56,58 +56,6 @@ function generateQRCodeSVG(text, size = 180) {
   </svg>`;
 }
 
-// Catalog Products
-const HONEY_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Nilgiri Wild Mountain Honey',
-    origin: 'Mudumalai Forest, Nilgiris, Tamil Nadu',
-    cluster: 'Nilgiris Adivasi Beekeeping Society',
-    type: 'forest',
-    note: 'Rare · Real · Raw · Limited Forest Harvest',
-    price: 680,
-    size: '500g',
-    image: 'nilgiris-honey.jpg',
-    batchId: 'HC-KVIC-2026-NIL01'
-  },
-  {
-    id: 2,
-    name: 'Kashmir White Acacia',
-    origin: 'Pampore, Pulwama, Jammu & Kashmir',
-    cluster: 'Kashmir Apicultural Federation',
-    type: 'floral',
-    note: 'Light Gold · Subtle Vanilla · Silky Clean',
-    price: 820,
-    size: '350g',
-    image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=700&q=80',
-    batchId: 'HC-KVIC-2026-KSH02'
-  },
-  {
-    id: 3,
-    name: 'Sundarbans Wild Mangrove',
-    origin: 'Gosaba, Sundarbans, West Bengal',
-    cluster: 'Sundarbans Forest Beekeepers Union',
-    type: 'forest',
-    note: 'Rich Molasses · Khalsi Nectar · Pungent',
-    price: 740,
-    size: '350g',
-    image: 'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=700&q=80',
-    batchId: 'HC-KVIC-2026-SUN03'
-  },
-  {
-    id: 4,
-    name: 'Coorg Jamun & Coffee Blossom',
-    origin: 'Madikeri, Coorg, Karnataka',
-    cluster: 'Kodagu District Beekeeping Cooperative',
-    type: 'floral',
-    note: 'Tart Berry · Coffee Flower · 100% Pure & Raw',
-    price: 650,
-    size: '500g',
-    image: 'coorg-honey.jpg',
-    batchId: 'HC-KVIC-2026-CRG04'
-  }
-];
-
 // Definition of the 4 Roles
 const AUTH_ROLES = {
   customer: {
@@ -207,6 +155,7 @@ class HoneyChainApp {
   constructor() {
     this.blockchain = new HoneyBlockchain();
     this.iotSimulator = new HiveTelemetrySimulator('KVIC-TB-NIL-4082');
+    this.products = [];
     this.cart = JSON.parse(localStorage.getItem('honeychain_cart') || '[]');
     
     this.initDOM();
@@ -217,8 +166,6 @@ class HoneyChainApp {
     this.initKisanModule();
     this.initKvicModule();
     this.initBlockchainExplorer();
-    this.renderProducts();
-    this.renderCart();
     this.initCartListeners();
     this.initChatbot();
     this.renderBeekeeperBatches();
@@ -227,6 +174,21 @@ class HoneyChainApp {
     // Default load active role
     this.switchRole(this.currentUser.role);
     this.verifyBatch('HC-KVIC-2026-NIL01');
+    this.loadProducts();
+  }
+
+  async loadProducts() {
+    try {
+      const response = await fetch('/api/products');
+      const products = await response.json();
+      if (!response.ok) throw new Error(products.error || 'Unable to load products');
+      this.products = products;
+      this.renderProducts();
+      this.renderAdminProducts();
+      this.renderCart();
+    } catch (error) {
+      this.toast(error.message);
+    }
   }
 
   initDOM() {
@@ -505,7 +467,7 @@ class HoneyChainApp {
   // 1. CONSUMER SHOP & QR TRACEABILITY PASSPORT
   // ==========================================
   renderProducts() {
-    const cardHtml = HONEY_PRODUCTS.map(p => `
+    const cardHtml = this.products.map(p => `
       <article class="product-card">
         <div class="product-image">
           <img src="${p.image}" alt="${p.name} honey jar" loading="lazy">
@@ -546,6 +508,21 @@ class HoneyChainApp {
 
     if (grid) grid.addEventListener('click', handleProductClicks);
     if (featuredGrid) featuredGrid.addEventListener('click', handleProductClicks);
+  }
+
+  renderAdminProducts() {
+    const tableBody = this.$('#admin-products-table-body');
+    if (!tableBody) return;
+    tableBody.innerHTML = this.products.map(product => `
+      <tr>
+        <td><strong>${product.name}</strong></td>
+        <td>${product.cluster}</td>
+        <td>₹${product.price}</td>
+        <td>${product.size}</td>
+        <td>${product.batchId}</td>
+        <td><span class="status-pill-active">In Stock</span></td>
+      </tr>
+    `).join('');
   }
 
   initTraceModule() {
@@ -1086,7 +1063,7 @@ class HoneyChainApp {
 
   // Cart operations
   addToCart(productId, qty = 1) {
-    const product = HONEY_PRODUCTS.find(p => p.id === productId);
+    const product = this.products.find(p => p.id === productId);
     if (!product) return;
     const existing = this.cart.find(item => item.id === productId);
     if (existing) existing.quantity += qty;
@@ -1102,7 +1079,7 @@ class HoneyChainApp {
     if (itemIndex === -1) return;
 
     this.cart[itemIndex].quantity += delta;
-    const product = HONEY_PRODUCTS.find(p => p.id === productId);
+    const product = this.products.find(p => p.id === productId);
 
     if (this.cart[itemIndex].quantity <= 0) {
       this.cart.splice(itemIndex, 1);
@@ -1118,7 +1095,7 @@ class HoneyChainApp {
   removeFromCart(productId) {
     const itemIndex = this.cart.findIndex(i => i.id === productId);
     if (itemIndex === -1) return;
-    const product = HONEY_PRODUCTS.find(p => p.id === productId);
+    const product = this.products.find(p => p.id === productId);
     this.cart.splice(itemIndex, 1);
     this.saveCart();
     this.renderCart();
@@ -1265,7 +1242,7 @@ class HoneyChainApp {
 
     let total = 0;
     const itemsHtml = this.cart.map(item => {
-      const p = HONEY_PRODUCTS.find(x => x.id === item.id);
+      const p = this.products.find(x => x.id === item.id);
       if (!p) return '';
       const subtotal = p.price * item.quantity;
       total += subtotal;

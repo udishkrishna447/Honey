@@ -116,6 +116,8 @@ By pairing **cryptographic blockchain batch records**, **smart IoT hive telemetr
    
    For Razorpay test checkout, put `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in the local `.env` file. The server loads them automatically when you run `npm start`.
 
+   Product catalog data is stored in MongoDB using `MONGODB_URI` from `.env`. On the first startup, the existing honey catalog is inserted into the `products` collection; later startups load the catalog from MongoDB.
+
 3. **Open in Browser**:
    Open your browser and navigate to:
    `
