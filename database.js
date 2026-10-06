@@ -12,6 +12,8 @@ let beekeepersCollection;
 let kvicOfficersCollection;
 let adminOfficersCollection;
 let honeyBatchesCollection;
+let cartsCollection;
+let ordersCollection;
 
 if (mongoUri) {
   try {
@@ -538,6 +540,8 @@ async function initializeDatabase() {
     kvicOfficersCollection = dbInstance.collection('kvic_officers');
     adminOfficersCollection = dbInstance.collection('admin_officers');
     honeyBatchesCollection = dbInstance.collection('honey_batches');
+    cartsCollection = dbInstance.collection('carts');
+    ordersCollection = dbInstance.collection('orders');
 
     // Indexing
     await productsCollection.createIndex({ id: 1 }, { unique: true });
@@ -546,6 +550,9 @@ async function initializeDatabase() {
     await kvicOfficersCollection.createIndex({ officerId: 1 }, { unique: true });
     await adminOfficersCollection.createIndex({ adminId: 1 }, { unique: true });
     await honeyBatchesCollection.createIndex({ batchId: 1 }, { unique: true });
+    await cartsCollection.createIndex({ userKey: 1 }, { unique: true });
+    await ordersCollection.createIndex({ orderId: 1 }, { unique: true });
+    await ordersCollection.createIndex({ userKey: 1, timestamp: -1 });
 
     // Seed Products
     if (await productsCollection.countDocuments() === 0) {
@@ -592,6 +599,8 @@ async function initializeDatabase() {
     kvicOfficersCollection = null;
     adminOfficersCollection = null;
     honeyBatchesCollection = null;
+    cartsCollection = null;
+    ordersCollection = null;
   }
 }
 
@@ -619,6 +628,116 @@ async function getProductsByIds(ids) {
     }
   }
   return seedProducts.filter(product => ids.includes(product.id));
+}
+
+async function createProduct(data) {
+  const existingProducts = await getProducts();
+  const id = Number(data.id) || (Math.max(0, ...existingProducts.map(product => product.id)) + 1);
+  const product = {
+    id,
+    name: String(data.name || 'Honey Product').trim(),
+    origin: String(data.origin || 'India').trim(),
+    cluster: String(data.cluster || 'KVIC Honey Cooperative').trim(),
+    type: String(data.type || 'floral').trim(),
+    note: String(data.note || 'Pure Indian Honey').trim(),
+    price: Number(data.price),
+    size: String(data.size || '500g').trim(),
+    image: String(data.image || 'nilgiris-honey.jpg').trim(),
+    batchId: String(data.batchId || `HC-KVIC-${Date.now()}`).trim(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  if (!product.name || !Number.isFinite(product.price) || product.price <= 0) {
+    throw new Error('Product name and a positive price are required');
+  }
+
+  if (productsCollection) {
+    await productsCollection.insertOne(product);
+  } else {
+    seedProducts.push(product);
+  }
+  return product;
+}
+
+async function updateProduct(id, data) {
+  const productId = Number(id);
+  const updates = {
+    ...(data.name !== undefined && { name: String(data.name).trim() }),
+    ...(data.origin !== undefined && { origin: String(data.origin).trim() }),
+    ...(data.cluster !== undefined && { cluster: String(data.cluster).trim() }),
+    ...(data.type !== undefined && { type: String(data.type).trim() }),
+    ...(data.note !== undefined && { note: String(data.note).trim() }),
+    ...(data.price !== undefined && { price: Number(data.price) }),
+    ...(data.size !== undefined && { size: String(data.size).trim() }),
+    ...(data.image !== undefined && { image: String(data.image).trim() }),
+    ...(data.batchId !== undefined && { batchId: String(data.batchId).trim() }),
+    updatedAt: new Date().toISOString()
+  };
+  if (updates.price !== undefined && (!Number.isFinite(updates.price) || updates.price <= 0)) {
+    throw new Error('Product price must be positive');
+  }
+  if (productsCollection) {
+    const result = await productsCollection.findOneAndUpdate(
+      { id: productId },
+      { $set: updates },
+      { returnDocument: 'after', projection: { _id: 0 } }
+    );
+    if (!result) throw new Error('Product not found');
+    return result;
+  }
+  const index = seedProducts.findIndex(product => product.id === productId);
+  if (index < 0) throw new Error('Product not found');
+  seedProducts[index] = { ...seedProducts[index], ...updates };
+  return seedProducts[index];
+}
+
+async function deleteProduct(id) {
+  const productId = Number(id);
+  if (productsCollection) {
+    const result = await productsCollection.deleteOne({ id: productId });
+    if (!result.deletedCount) throw new Error('Product not found');
+    return;
+  }
+  const index = seedProducts.findIndex(product => product.id === productId);
+  if (index < 0) throw new Error('Product not found');
+  seedProducts.splice(index, 1);
+}
+
+async function getCart(userKey) {
+  if (!userKey) return [];
+  if (cartsCollection) {
+    const cart = await cartsCollection.findOne({ userKey }, { projection: { _id: 0, items: 1 } });
+    return cart?.items || [];
+  }
+  return [];
+}
+
+async function saveCart(userKey, items) {
+  if (!userKey) throw new Error('User identity is required');
+  const cleanItems = items.map(item => ({ id: Number(item.id), quantity: Number(item.quantity) }))
+    .filter(item => Number.isInteger(item.id) && Number.isInteger(item.quantity) && item.quantity > 0);
+  if (cartsCollection) {
+    await cartsCollection.updateOne(
+      { userKey },
+      { $set: { userKey, items: cleanItems, updatedAt: new Date().toISOString() } },
+      { upsert: true }
+    );
+  }
+  return cleanItems;
+}
+
+async function getOrders(userKey) {
+  if (!userKey) return [];
+  if (ordersCollection) {
+    return ordersCollection.find({ userKey }, { projection: { _id: 0 } }).sort({ timestamp: -1 }).toArray();
+  }
+  return [];
+}
+
+async function saveOrder(order) {
+  if (!ordersCollection) return order;
+  await ordersCollection.updateOne({ orderId: order.orderId }, { $set: order }, { upsert: true });
+  return order;
 }
 
 // DASHBOARD KPI STATS
@@ -1179,6 +1298,13 @@ module.exports = {
   initializeDatabase,
   getProducts,
   getProductsByIds,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getCart,
+  saveCart,
+  getOrders,
+  saveOrder,
   getDashboardStats,
   getBeekeepers,
   addBeekeeper,

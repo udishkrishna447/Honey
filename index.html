@@ -1531,6 +1531,15 @@
             <p style="font-size: 0.88rem; color: #78716c;">Manage customer marketplace listings, pricing, and certified batch linkages.</p>
           </div>
 
+          <form id="admin-product-form" style="display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 10px; margin-bottom: 18px; align-items: end;">
+            <div class="form-field"><label for="product-name">Product name</label><input id="product-name" required /></div>
+            <div class="form-field"><label for="product-price">Price (₹)</label><input id="product-price" type="number" min="1" required /></div>
+            <div class="form-field"><label for="product-size">Size</label><input id="product-size" value="500g" required /></div>
+            <div class="form-field"><label for="product-batch">Batch ID</label><input id="product-batch" required /></div>
+            <div class="form-field" style="grid-column: span 3;"><label for="product-cluster">Origin / cluster</label><input id="product-cluster" required /></div>
+            <button class="button button-amber" type="submit">Add Product <span>+</span></button>
+          </form>
+
           <div class="admin-table-container">
             <table class="admin-table">
               <thead>
@@ -1541,6 +1550,7 @@
                   <th>Size</th>
                   <th>Linked Batch</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="admin-products-table-body"></tbody>

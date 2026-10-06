@@ -156,7 +156,7 @@ class HoneyChainApp {
     this.blockchain = new HoneyBlockchain();
     this.iotSimulator = new HiveTelemetrySimulator('KVIC-TB-NIL-4082');
     this.products = [];
-    this.cart = JSON.parse(localStorage.getItem('honeychain_cart') || '[]');
+    this.cart = [];
     
     this.initDOM();
     this.initAuthModule();
@@ -169,6 +169,7 @@ class HoneyChainApp {
     this.initOrders();
     this.renderCustomerOrders();
     this.initCartListeners();
+    this.initProductManagement();
     this.initChatbot();
     this.renderBeekeeperBatches();
     this.renderBeekeeperQR();
@@ -349,7 +350,50 @@ class HoneyChainApp {
   }
 
   checkInitialAuthState() {
-    this.showAuthGateway();
+    const cachedUser = JSON.parse(localStorage.getItem('honeychain_auth_user') || 'null');
+    if (!cachedUser?.role) {
+      this.showAuthGateway();
+      return;
+    }
+    this.currentUser = cachedUser;
+    fetch(`/api/auth/me?role=${encodeURIComponent(cachedUser.role)}&id=${encodeURIComponent(this.getUserIdentity(cachedUser))}`)
+      .then(response => response.json().then(data => ({ response, data })))
+      .then(({ response, data }) => {
+        if (!response.ok || !data.user) throw new Error(data.error || 'Session expired');
+        this.loginSuccess(data.user, false);
+      })
+      .catch(() => {
+        localStorage.removeItem('honeychain_auth_user');
+        this.showAuthGateway();
+      });
+  }
+
+  getUserIdentity(user = this.currentUser) {
+    return user?.customerId || user?.beekeeperId || user?.officerId || user?.adminId || user?.email || user?.name;
+  }
+
+  getUserKey() {
+    const identity = this.getUserIdentity();
+    return identity && this.currentUser?.role ? `${this.currentUser.role}:${identity}` : '';
+  }
+
+  async loadCloudUserData() {
+    const userKey = this.getUserKey();
+    if (!userKey) return;
+    try {
+      const [cartResponse, ordersResponse] = await Promise.all([
+        fetch(`/api/cart?userKey=${encodeURIComponent(userKey)}`),
+        fetch(`/api/orders?userKey=${encodeURIComponent(userKey)}`)
+      ]);
+      const cartData = await cartResponse.json();
+      const ordersData = await ordersResponse.json();
+      if (cartResponse.ok) this.cart = Array.isArray(cartData.items) ? cartData.items : [];
+      if (ordersResponse.ok) this.orders = Array.isArray(ordersData.orders) ? ordersData.orders : [];
+      this.renderCart();
+      this.renderCustomerOrders();
+    } catch (error) {
+      this.toast(`Could not sync cloud data: ${error.message}`);
+    }
   }
 
   showAuthGateway() {
@@ -596,6 +640,7 @@ class HoneyChainApp {
     if (headerLogout) headerLogout.style.display = 'inline-flex';
 
     this.switchRole(user.role, user);
+    this.loadCloudUserData();
 
     if (showToast) {
       this.toast(`Welcome, ${user.name}! Connected to MongoDB.`);
@@ -649,6 +694,10 @@ class HoneyChainApp {
   logout() {
     localStorage.removeItem('honeychain_auth_user');
     this.currentUser = null;
+    this.cart = [];
+    this.orders = [];
+    this.renderCart();
+    this.renderCustomerOrders();
     this.showAuthGateway();
     this.toast('Signed out successfully.');
   }
@@ -798,8 +847,57 @@ class HoneyChainApp {
         <td>${product.size}</td>
         <td>${product.batchId}</td>
         <td><span class="status-pill-active">In Stock</span></td>
+        <td><button class="inline-pill" data-delete-product="${product.id}">Delete</button></td>
       </tr>
     `).join('');
+  }
+
+  initProductManagement() {
+    const form = this.$('#admin-product-form');
+    if (!form) return;
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            role: this.currentUser?.role,
+            name: this.$('#product-name').value.trim(),
+            price: Number(this.$('#product-price').value),
+            size: this.$('#product-size').value.trim(),
+            batchId: this.$('#product-batch').value.trim(),
+            cluster: this.$('#product-cluster').value.trim()
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Product could not be added');
+        form.reset();
+        this.toast('Product saved to MongoDB');
+        await this.loadProducts();
+      } catch (error) {
+        this.toast(error.message);
+      }
+    });
+
+    this.$('#admin-products-table-body')?.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-delete-product]');
+      if (!button || this.currentUser?.role !== 'admin') return;
+      if (!confirm('Delete this product from the cloud catalog?')) return;
+      try {
+        const response = await fetch(`/api/products/${button.dataset.deleteProduct}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: this.currentUser.role })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Product could not be deleted');
+        this.toast('Product deleted from MongoDB');
+        await this.loadProducts();
+      } catch (error) {
+        this.toast(error.message);
+      }
+    });
   }
 
   initTraceModule() {
@@ -1387,7 +1485,13 @@ class HoneyChainApp {
   }
 
   saveCart() {
-    localStorage.setItem('honeychain_cart', JSON.stringify(this.cart));
+    const userKey = this.getUserKey();
+    if (!userKey) return;
+    fetch('/api/cart', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userKey, items: this.cart })
+    }).catch(error => this.toast(`Cart sync failed: ${error.message}`));
   }
 
   initCartListeners() {
@@ -1468,80 +1572,10 @@ class HoneyChainApp {
   }
 
   initOrders() {
-    const saved = localStorage.getItem('honeychain_customer_orders');
-    if (saved) {
-      try {
-        this.orders = JSON.parse(saved);
-      } catch (e) {
-        this.orders = [];
-      }
-    }
-    if (!this.orders || !this.orders.length) {
-      this.orders = [
-        {
-          orderId: 'HC-2026-8812',
-          paymentId: 'pay_NILGIRI_8812',
-          razorpayOrderId: 'order_NIL8812',
-          date: '02 Sep 2026',
-          timestamp: '2026-09-02T10:30:00.000Z',
-          status: 'Delivered',
-          statusClass: 'badge-delivered',
-          statusNote: 'Delivered · Shipped via BlueDart Express',
-          totalAmount: 680,
-          customerName: 'Ananya Sharma',
-          customerEmail: 'ananya@honeychain.kvic.in',
-          items: [
-            {
-              id: 1,
-              name: 'Nilgiri Wild Forest Multiflora',
-              size: '500g',
-              price: 680,
-              quantity: 1,
-              subtotal: 680,
-              batchId: 'HC-KVIC-2026-NIL01',
-              image: 'nilgiris-honey.jpg'
-            }
-          ]
-        },
-        {
-          orderId: 'HC-2026-9041',
-          paymentId: 'pay_KASHMIR_9041',
-          razorpayOrderId: 'order_KSH9041',
-          date: '10 Sep 2026',
-          timestamp: '2026-09-10T14:15:00.000Z',
-          status: 'In Transit',
-          statusClass: 'badge-in_transit',
-          statusNote: 'Dispatched from Srinagar Khadi Hub · Expected 14 Sep 2026',
-          totalAmount: 820,
-          customerName: 'Ananya Sharma',
-          customerEmail: 'ananya@honeychain.kvic.in',
-          items: [
-            {
-              id: 2,
-              name: 'Kashmir White Acacia',
-              size: '350g',
-              price: 820,
-              quantity: 1,
-              subtotal: 820,
-              batchId: 'HC-KVIC-2026-KSH02',
-              image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=700&q=80'
-            }
-          ]
-        }
-      ];
-      this.saveOrders();
-    }
+    this.orders = [];
   }
 
-  saveOrders() {
-    try {
-      localStorage.setItem('honeychain_customer_orders', JSON.stringify(this.orders));
-    } catch (e) {
-      console.warn('Could not save orders to localStorage', e);
-    }
-  }
-
-  completeOrder(payment) {
+  async completeOrder(payment) {
     // 1. Capture ordered items snapshot before clearing cart
     const orderedItems = this.cart.map(item => {
       const p = (this.products || []).find(x => x.id === item.id) || {};
@@ -1580,12 +1614,25 @@ class HoneyChainApp {
       items: orderedItems
     };
 
-    // 2. Prepend order to user's order history
-    if (!this.orders) this.orders = [];
-    this.orders.unshift(newOrder);
-    this.saveOrders();
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newOrder,
+          userKey: this.getUserKey()
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not save order to MongoDB');
+      if (!this.orders) this.orders = [];
+      this.orders.unshift(result.order);
+    } catch (error) {
+      this.toast(`Order could not be saved: ${error.message}`);
+      return;
+    }
 
-    // 3. Clear cart and reset cart UI
+    // Clear cart and reset cart UI
     this.cart = [];
     this.saveCart();
     this.renderCart();

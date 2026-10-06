@@ -118,6 +118,8 @@ By pairing **cryptographic blockchain batch records**, **smart IoT hive telemetr
 
    Product catalog data is stored in MongoDB using `MONGODB_URI` from `.env`. On the first startup, the existing honey catalog is inserted into the `products` collection; later startups load the catalog from MongoDB.
 
+   Authenticated user carts are stored in `carts`, successful payment orders in `orders`, and registrations, beekeepers, officers, and honey batches are stored in their respective MongoDB collections. The browser keeps only a cached login identity and revalidates it with the server.
+
 3. **Open in Browser**:
    Open your browser and navigate to:
    `

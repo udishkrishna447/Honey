@@ -13,6 +13,13 @@ const {
   initializeDatabase,
   getProducts,
   getProductsByIds,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getCart,
+  saveCart,
+  getOrders,
+  saveOrder,
   getDashboardStats,
   getBeekeepers,
   addBeekeeper,
@@ -469,15 +476,125 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  if (pathname === '/api/products' && req.method === 'GET') {
-    getProducts().then(products => {
+  if (pathname === '/api/products') {
+    if (req.method === 'GET') {
+      getProducts().then(products => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(products));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'POST') {
+      readJsonBody(req).then(body => {
+        if (body.role !== 'admin') throw new Error('Admin access required');
+        return createProduct(body);
+      }).then(product => {
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, product }));
+      }).catch(error => {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+  }
+
+  if (pathname.startsWith('/api/products/') && ['PUT', 'DELETE'].includes(req.method)) {
+    const productId = pathname.replace('/api/products/', '').trim();
+    readJsonBody(req).then(body => {
+      if (body.role !== 'admin') throw new Error('Admin access required');
+      return req.method === 'DELETE' ? deleteProduct(productId) : updateProduct(productId, body);
+    }).then(product => {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(products));
+      res.end(JSON.stringify({ success: true, product: product || null }));
     }).catch(error => {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: error.message }));
     });
     return;
+  }
+
+  if (pathname === '/api/cart') {
+    if (req.method === 'GET') {
+      const userKey = parsedUrl.searchParams.get('userKey');
+      getCart(userKey).then(items => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ items }));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'PUT') {
+      readJsonBody(req).then(({ userKey, items }) => saveCart(userKey, Array.isArray(items) ? items : []))
+        .then(savedItems => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ items: savedItems }));
+        }).catch(error => {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: error.message }));
+        });
+      return;
+    }
+  }
+
+  if (pathname === '/api/orders') {
+    if (req.method === 'GET') {
+      const userKey = parsedUrl.searchParams.get('userKey');
+      getOrders(userKey).then(orders => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ orders }));
+      }).catch(error => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
+    if (req.method === 'POST') {
+      readJsonBody(req).then(async body => {
+        if (!body.userKey || !Array.isArray(body.items) || !body.items.length) throw new Error('Order details are required');
+        const productIds = [...new Set(body.items.map(item => Number(item.id)))];
+        const products = await getProductsByIds(productIds);
+        const productMap = new Map(products.map(product => [product.id, product]));
+        if (products.length !== productIds.length) throw new Error('Invalid product in order');
+        const items = body.items.map(item => {
+          const product = productMap.get(Number(item.id));
+          const quantity = Number(item.quantity);
+          if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) throw new Error('Invalid product quantity');
+          return { ...product, quantity, subtotal: product.price * quantity };
+        });
+        const order = {
+          orderId: body.orderId || `HC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          userKey: body.userKey,
+          paymentId: body.paymentId || '',
+          razorpayOrderId: body.razorpayOrderId || '',
+          timestamp: body.timestamp || new Date().toISOString(),
+          date: body.date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: 'Confirmed',
+          statusClass: 'badge-confirmed',
+          statusNote: 'Payment Verified · Direct allocation to KVIC tribal cooperative',
+          totalAmount: items.reduce((sum, item) => sum + item.subtotal, 0),
+          customerName: body.customerName || 'Customer',
+          customerEmail: body.customerEmail || '',
+          customerPhone: body.customerPhone || '',
+          shippingAddress: body.shippingAddress || '',
+          items
+        };
+        await saveOrder(order);
+        return order;
+      }).then(order => {
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, order }));
+      }).catch(error => {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: error.message }));
+      });
+      return;
+    }
   }
 
   if (pathname === '/api/chat' && req.method === 'POST') {
